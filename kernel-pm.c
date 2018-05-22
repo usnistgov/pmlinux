@@ -101,33 +101,34 @@ void get_path (int fd, const char *pathname, const char *syscall)
 {
      
   if (strcmp(syscall, "open") == 0) {
-    /*if (strstr(pathname, "/home/") != NULL) {
+    if (strstr(pathname, "/home/") != NULL) {
       strcpy(file_pathname, pathname);
     }
     
     else {
-      char *current_dir;
-      struct path path;
-      char buf[100];
+      char *cwd;
+      struct path *path;
+      char buf[1000];
     
-      path = current -> fs -> pwd;
-      path_get(&path);
-      current_dir = d_path(&path, buf, 100*sizeof(char));
-      strcpy(file_pathname, current_dir);
+      path = &(current -> fs -> pwd);
+      path_get(path);
+      cwd = d_path(path, buf, 1000*sizeof(char));
+      path_put(path);
+      strcpy(file_pathname, cwd);
       
-      }*/
-    struct filename *path;
+      }
+    /*struct filename *path;
     path = getname(pathname);
-    strcpy(file_pathname, path-> name);
+    strcpy(file_pathname, path-> name);*/
     //printk("open %s\n", file_pathname);
   }
 
   else {
-    char buf[1000];
-    char *cwd;
     struct file *file;
     struct path *path;
-
+    char *cwd;
+    char buf[1000];
+    
     spin_lock(&current->files->file_lock);
     file = fcheck_files(current->files, fd);
 
@@ -137,6 +138,7 @@ void get_path (int fd, const char *pathname, const char *syscall)
     cwd = d_path(path, buf, 1000*sizeof(char));
     path_put(path);
     strcpy(file_pathname, cwd);
+    
     //printk("r/w %s\n", file_pathname);
   }
   
@@ -287,14 +289,14 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
  asmlinkage long new_sys_open(const char *pathname, int flags)
 {
   int ans;
-
+  
   if (down_interruptible(&sem))
     return 0;
   if (inProcs(task_pid_nr(current)))
   {
     get_path(-1, pathname, "open");
    
-    if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest.txt") != NULL)
+    if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest") != NULL)
     {
       if (policy_machine_running == 0) {
 	up(&sem);
