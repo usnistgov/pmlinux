@@ -37,7 +37,7 @@ unsigned long **sys_call_table;
 unsigned long original_cr0;
 unsigned long *doexec;
 unsigned long *doexeccom;
-
+unsigned long *doexecaddr = (void *)&do_execve;
 static struct task_struct *sleeping_policy_machine;
 static struct task_struct *sleeping_policy_process;
 
@@ -110,7 +110,7 @@ void get_path (int fd, const char *pathname, const char *syscall)
       printk("home comp\n");
     }
     
-    /*else {
+    else {
       char *cwd;
       struct path *path;
       char buf[1000];
@@ -120,7 +120,6 @@ void get_path (int fd, const char *pathname, const char *syscall)
       cwd = d_path(path, buf, 1000*sizeof(char));
       path_put(path);
       strcpy(file_pathname, cwd);
-<<<<<<< HEAD
       strcat(file_pathname, "/");
       strcat(file_pathname, pathname);
       printk("path: %s\n", file_pathname);
@@ -131,17 +130,13 @@ void get_path (int fd, const char *pathname, const char *syscall)
       printk("path: %s\n", file_pathname);
       
       }*/
-    else{
->>>>>>> ad57524f23269591ed9ba2fcf70c154bdbf17203
+    /*else{
     struct filename *path;
     path = getname(pathname);
     strcpy(file_pathname, path-> name);
-    printk("path: %s\n", file_pathname);
-<<<<<<< HEAD
-    }*/
-=======
+    printk("path: %s\n", file_pathname
     }
->>>>>>> ad57524f23269591ed9ba2fcf70c154bdbf17203
+    }*/
   }
 
   else {
@@ -461,8 +456,9 @@ static int __init interceptor_start (void)
 
   doexec = *sys_call_table - 5037424;
   doexeccom = *sys_call_table - 5038112;
-
-  ref_sys_doexec = (void *)doexec;
+  printk("my doexec: %p", doexec);
+  printk("doexec: %p", doexecaddr);
+  //ref_sys_doexec = (void *)doexec;
   init_waitqueue_head(&wait_queue);
   sema_init(&sem, 1);
   
