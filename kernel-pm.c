@@ -105,7 +105,7 @@ void get_path (int fd, const char *pathname, const char *syscall)
       strcpy(file_pathname, pathname);
     }
     
-    else {
+    /*else {
       char *cwd;
       struct path *path;
       char buf[1000];
@@ -115,12 +115,15 @@ void get_path (int fd, const char *pathname, const char *syscall)
       cwd = d_path(path, buf, 1000*sizeof(char));
       path_put(path);
       strcpy(file_pathname, cwd);
+      printk("path: %s\n", file_pathname);
       
-      }
-    /*struct filename *path;
+      }*/
+    else{
+    struct filename *path;
     path = getname(pathname);
-    strcpy(file_pathname, path-> name);*/
-    //printk("open %s\n", file_pathname);
+    strcpy(file_pathname, path-> name);
+    printk("path: %s\n", file_pathname);
+    }
   }
 
   else {
@@ -294,8 +297,9 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
     return 0;
   if (inProcs(task_pid_nr(current)))
   {
+    
     get_path(-1, pathname, "open");
-   
+  
     if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest") != NULL)
     {
       if (policy_machine_running == 0) {
