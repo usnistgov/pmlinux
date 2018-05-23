@@ -35,6 +35,8 @@
 
 unsigned long **sys_call_table;
 unsigned long original_cr0;
+unsigned long *doexec;
+unsigned long *doexeccom;
 
 static struct task_struct *sleeping_policy_machine;
 static struct task_struct *sleeping_policy_process;
@@ -77,6 +79,8 @@ asmlinkage long (*getuid)(void);
 
 asmlinkage long (*ref_sys_execve)(const char __user *filename, const char __user *const __user *argv, const char __user *const __user*envp);
 
+asmlinkage long (*ref_sys_doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
+
 asmlinkage long new_sys_execve(const char __user *filename, const char __user *const __user *argv, const char __user *const __user *envp)
 {
   long ret;
@@ -101,8 +105,9 @@ void get_path (int fd, const char *pathname, const char *syscall)
 {
      
   if (strcmp(syscall, "open") == 0) {
-    if (strstr(pathname, "/home/") != NULL) {
+    if (strncmp(pathname, "/home/", 6) == 0) {
       strcpy(file_pathname, pathname);
+      printk("home comp\n");
     }
     
     else {
@@ -115,12 +120,17 @@ void get_path (int fd, const char *pathname, const char *syscall)
       cwd = d_path(path, buf, 1000*sizeof(char));
       path_put(path);
       strcpy(file_pathname, cwd);
+      strcat(file_pathname, "/");
+      strcat(file_pathname, pathname);
+      printk("path: %s\n", file_pathname);
       
       }
-    /*struct filename *path;
+    /*else{
+    struct filename *path;
     path = getname(pathname);
-    strcpy(file_pathname, path-> name);*/
-    //printk("open %s\n", file_pathname);
+    strcpy(file_pathname, path-> name);
+    printk("path: %s\n", file_pathname);
+    }*/
   }
 
   else {
@@ -294,8 +304,9 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
     return 0;
   if (inProcs(task_pid_nr(current)))
   {
+    
     get_path(-1, pathname, "open");
-   
+  
     if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest") != NULL)
     {
       if (policy_machine_running == 0) {
@@ -436,7 +447,11 @@ static int __init interceptor_start (void)
   printk("start\n");
   if(!(sys_call_table = acquire_sys_call_table()))
     return -1;
-  
+
+  doexec = *sys_call_table - 5037424;
+  doexeccom = *sys_call_table - 5038112;
+
+  ref_sys_doexec = (void *)doexec;
   init_waitqueue_head(&wait_queue);
   sema_init(&sem, 1);
   
