@@ -110,7 +110,7 @@ void get_path (int fd, const char *pathname, const char *syscall)
       printk("home comp\n");
     }
     
-    else {
+    /*else {
       char *cwd;
       struct path *path;
       char buf[1000];
@@ -120,17 +120,28 @@ void get_path (int fd, const char *pathname, const char *syscall)
       cwd = d_path(path, buf, 1000*sizeof(char));
       path_put(path);
       strcpy(file_pathname, cwd);
+<<<<<<< HEAD
       strcat(file_pathname, "/");
       strcat(file_pathname, pathname);
       printk("path: %s\n", file_pathname);
       
       }
     /*else{
+=======
+      printk("path: %s\n", file_pathname);
+      
+      }*/
+    else{
+>>>>>>> ad57524f23269591ed9ba2fcf70c154bdbf17203
     struct filename *path;
     path = getname(pathname);
     strcpy(file_pathname, path-> name);
     printk("path: %s\n", file_pathname);
+<<<<<<< HEAD
     }*/
+=======
+    }
+>>>>>>> ad57524f23269591ed9ba2fcf70c154bdbf17203
   }
 
   else {
