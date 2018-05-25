@@ -14,12 +14,13 @@ The following steps are required to functionally use the module:
 
  3) In order to run the current version of the module, you must add two lines to the operating system code and recompile the kernel.
 
-      The first line you must add is in /fs/exec.c:
+    The first line you must add is in /fs/exec.c:
 
-           EXPORT_SYMOBL(do_execve)
+        EXPORT_SYMOBL(do_execve)
 
-      The second line you must add is in /fs/namei.c:
-           EXPORT_SYMBOL(getname)
+    The second line you must add is in /fs/namei.c:
+    
+        EXPORT_SYMBOL(getname)
 
 Adding these lines will allow these functions to be called and used in the kernel module.
 
