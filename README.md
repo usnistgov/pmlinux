@@ -8,9 +8,9 @@ Development is in the very early stages.
 
 The following steps are required to functionally use the module:
 
-Module is only compatible with the Linux operating system.
+ 1) Module is only compatible with the Linux operating system.
 
-The user must have admin privileges on the system in order to insert the module.
+ 2) The user must have admin privileges on the system in order to insert the module.
 
 In order to run the current version of the module, you must add two lines to the operating system code and recompile the kernel.
 
