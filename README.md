@@ -25,6 +25,7 @@ The following steps are required to functionally use the module:
 Adding these lines will allow these functions to be called and used in the kernel module.
 
 4) Once you add these lines, you have to recompile the operating system code.
+
 For those of you unfamiliar with compiling operating system code, the following link offers instructions and tips:
 
     https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel
