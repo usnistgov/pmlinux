@@ -39,7 +39,7 @@ unsigned long original_cr0;
 //unsigned long *doexec;
 int (*doexeccom)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
 int (*doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
-long (*mygetname)(const char __user *filename);
+struct filename *(*mygetname)(const char __user *filename);
 static struct task_struct *sleeping_policy_machine;
 static struct task_struct *sleeping_policy_process;
 
