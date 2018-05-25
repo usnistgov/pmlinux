@@ -38,7 +38,8 @@ unsigned long **sys_call_table;
 unsigned long original_cr0;
 //unsigned long *doexec;
 int (*doexeccom)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
-int (*doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp); 
+int (*doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
+long (*mygetname)(const char __user *filename);
 static struct task_struct *sleeping_policy_machine;
 static struct task_struct *sleeping_policy_process;
 
@@ -96,8 +97,10 @@ asmlinkage long new_sys_execve(const char __user *filename, const char __user *c
   }
 
   up(&sem);
-  ret = do_execve(getname(filename), argv, envp);
-    return ret;
+  /*ret = do_execve(getname(filename), argv, envp);
+    return ret;*/
+  struct filename *file = mygetname(filename);
+  return doexec(file, argv, envp);
   //return ref_sys_execve(filename, argv, envp);
 
 }
@@ -455,13 +458,12 @@ static int __init interceptor_start (void)
   printk("start\n");
   if(!(sys_call_table = acquire_sys_call_table()))
     return -1;
-
-  doexec = (void *)(sys_call_table - 5037424);
-  //doexeccom = *sys_call_table - 5038112;
-  //printk("my doexec: %p\n", doexec);
-  //doexecaddr = do_execve;
-  //printk("doexec: %p", doexecaddr);
-  ref_sys_doexec = (void *)doexec;
+  printk("syscall addr: %p\n", *sys_call_table);
+  printk("doexec?: %p\n", (void *)(*sys_call_table + 3648));
+  doexec = (void *)(*sys_call_table + 3648);
+  printk("my doexec: %p\n", doexec);
+  mygetname = (void *)(*sys_call_table + 7686);
+  printk("getname: %p\n", mygetname);
   init_waitqueue_head(&wait_queue);
   sema_init(&sem, 1);
   
