@@ -13,26 +13,26 @@ The following steps are required to functionally use the module:
 
 3) In order to run the current version of the module, you must add two lines to the operating system code and recompile the kernel.
 
-4) The first line you must add is in /fs/exec.c:
+    The first line you must add is in /fs/exec.c:
 
-EXPORT_SYMOBL(do_execve)
+        EXPORT_SYMOBL(do_execve)
 
-5) The second line you must add is in /fs/namei.c:
+    The second line you must add is in /fs/namei.c:
 
-EXPORT_SYMBOL(getname)
+        EXPORT_SYMBOL(getname)
 
 Adding these lines will allow these functions to be called and used in the kernel module.
 
-6) Once you add these lines, you have to recompile the operating system code.
+4) Once you add these lines, you have to recompile the operating system code.
 
 For those of you unfamiliar with compiling operating system code, the following link offers instructions and tips:
 
-https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel
+    https://wiki.ubuntu.com/Kernel/BuildYourOwnKernel
 
-7) Once your code is recompiled, we are ready to boot the new kernel code.
+Once your code is recompiled, we are ready to boot the new kernel code.
 
-8) In order to compile the code, the Makefile and kernel-pm.c code must be in the same folder.
+5) In order to compile the code, the Makefile and kernel-pm.c code must be in the same folder.
 
-9) To compile, run the following command: make.
+6) To compile, run the following command: make.
 
-10) To insert/use the module, run the following command: sudo insmod kernel-pm.ko. The system will prompt you to enter your password. 
+7) To insert/use the module, run the following command: sudo insmod kernel-pm.ko. The system will prompt you to enter your password. 
