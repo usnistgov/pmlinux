@@ -116,8 +116,11 @@ asmlinkage long new_sys_execve(const char __user *filename, const char __user *c
 //Get file pathname
 void get_path (int fd, const char *pathname, const char *syscall)
 {
-     
+  char buffer[1000];
+  ssize_t ret;
   if (strcmp(syscall, "open") == 0) {
+    
+    
     if (strncmp(pathname, "/home/", 6) == 0) {
       strcpy(file_pathname, pathname);
     }
@@ -134,9 +137,11 @@ void get_path (int fd, const char *pathname, const char *syscall)
       strcpy(file_pathname, cwd);
       if(strncmp(pathname, "/", 1) != 0) {
 	strcat(file_pathname, "/");
-	strcat(file_pathname, pathname);
       }
+      strcat(file_pathname, pathname);
+      
     }
+    
   }
 
   else {
@@ -202,11 +207,11 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     user = buffer_pointer + sizeof(uid_t);
     *user = user_id;
     path = buffer_pointer + sizeof(uid_t) + sizeof(uid_t);
-    printk("pathname: %s\n", file_pathname);
+    //printk("pathname: %s\n", file_pathname);
     strcpy(path, file_pathname);
     systemcallname = path + 1000;
     strcpy(systemcallname, syscallname);
-    printk("syscall: %s\n", syscallname);
+    //printk("syscall: %s\n", syscallname);
     up(&sem);
   }
 
@@ -224,10 +229,10 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     *user = user_id;
     path = buffer_pointer + sizeof(uid_t) + sizeof(uid_t);
     strcpy(path, file_pathname);
-    printk("pathname: %s\n", path);
+    //printk("pathname: %s\n", path);
     systemcallname = path + 1000;
     strcpy(systemcallname, syscallname);
-    printk("syscall: %s\n", syscallname);
+    //printk("syscall: %s\n", syscallname);
     up(&sem);
   }
     
@@ -430,7 +435,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
   int ans;
   uid_t id;
   char full_pathname[1000];
-  
+
   if (down_interruptible(&sem))
     return 0;
   if (inProcs(task_pid_nr(current)))
@@ -438,13 +443,12 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
     
     get_path(-1, pathname, "open");
     
-    if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest") != NULL)
+    if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest") != NULL || strstr(file_pathname, "linktest1")!=NULL)
     {
       if (policy_machine_running == 0) {
 	up(&sem);
 	return -1;
       }
-     
       /*up(&sem);
 	ans = pm_blocking("processcall", -1, pathname, -1, "open");*/
       //up(&sem);
