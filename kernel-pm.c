@@ -1,4 +1,3 @@
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -65,6 +64,15 @@ char file_pathname[1000];
 
 void *buffer_pointer = NULL;
 
+typedef struct{
+  uid_t user_id;
+  char *open[100];
+  char *read[100];
+  char *write[100];
+}cache_entry;
+
+cache_entry *cache[100];
+
 //Checks to see if process is policy process
 int inProcs(pid_t process_id)
 {
@@ -97,10 +105,10 @@ asmlinkage long new_sys_execve(const char __user *filename, const char __user *c
   }
 
   up(&sem);
-  /*ret = do_execve(getname(filename), argv, envp);
-    return ret;*/
-  struct filename *file = mygetname(filename);
-  return doexec(file, argv, envp);
+  ret = do_execve(getname(filename), argv, envp);
+  return ret;
+  /*struct filename *file = mygetname(filename);
+    return doexec(file, argv, envp);*/
   //return ref_sys_execve(filename, argv, envp);
 
 }
@@ -112,7 +120,6 @@ void get_path (int fd, const char *pathname, const char *syscall)
   if (strcmp(syscall, "open") == 0) {
     if (strncmp(pathname, "/home/", 6) == 0) {
       strcpy(file_pathname, pathname);
-      printk("home comp\n");
     }
     
     else {
@@ -125,23 +132,11 @@ void get_path (int fd, const char *pathname, const char *syscall)
       cwd = d_path(path, buf, 1000*sizeof(char));
       path_put(path);
       strcpy(file_pathname, cwd);
-      strcat(file_pathname, "/");
-      strcat(file_pathname, pathname);
-      printk("path: %s\n", file_pathname);
-      
+      if(strncmp(pathname, "/", 1) != 0) {
+	strcat(file_pathname, "/");
+	strcat(file_pathname, pathname);
       }
-    /*else{
-=======
-      printk("path: %s\n", file_pathname);
-      
-      }*/
-    /*else{
-    struct filename *path;
-    path = getname(pathname);
-    strcpy(file_pathname, path-> name);
-    printk("path: %s\n", file_pathname
     }
-    }*/
   }
 
   else {
@@ -159,12 +154,10 @@ void get_path (int fd, const char *pathname, const char *syscall)
     cwd = d_path(path, buf, 1000*sizeof(char));
     path_put(path);
     strcpy(file_pathname, cwd);
-    
-    //printk("r/w %s\n", file_pathname);
   }
   
 }
-
+ 
 //PM from kernel perspective
 int pm_blocking (const char *name, int flags, const char *pathname, int fd, const char *syscall)
 {
@@ -209,13 +202,11 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     user = buffer_pointer + sizeof(uid_t);
     *user = user_id;
     path = buffer_pointer + sizeof(uid_t) + sizeof(uid_t);
-    printk(file_pathname);
-    printk("\n");
+    printk("pathname: %s\n", file_pathname);
     strcpy(path, file_pathname);
     systemcallname = path + 1000;
-    printk(syscallname);
-    printk("\n");
     strcpy(systemcallname, syscallname);
+    printk("syscall: %s\n", syscallname);
     up(&sem);
   }
 
@@ -232,13 +223,11 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     user = buffer_pointer + sizeof(uid_t);
     *user = user_id;
     path = buffer_pointer + sizeof(uid_t) + sizeof(uid_t);
-    printk(file_pathname);
-    printk("\n");
     strcpy(path, file_pathname);
+    printk("pathname: %s\n", path);
     systemcallname = path + 1000;
-    printk(syscallname);
-    printk("\n");
     strcpy(systemcallname, syscallname);
+    printk("syscall: %s\n", syscallname);
     up(&sem);
   }
     
@@ -280,6 +269,135 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
   return 1;
 }
 
+void add_to_cache(cache_entry *entry, char *syscall, char *full_pathname)
+{
+  int i = 0;
+  if(strcmp(syscall, "open") == 0) {
+    while (i < 100) {
+      if(strcmp(entry->open[i], "empty") == 0) {
+	strcpy(entry->open[i], full_pathname);
+	return;
+      }
+      i++;
+    }
+  }
+
+  if(strcmp(syscall, "read") == 0) {
+    while (i < 100) {
+      if(strcmp(entry->read[i], "empty") == 0) {
+	strcpy(entry->read[i], full_pathname);
+	return;
+      }
+      i++;
+    }
+  }
+
+  if(strcmp(syscall, "write") == 0) {
+    while (i < 100) {
+      if(strcmp(entry->write[i],"empty") == 0) {
+	strcpy(entry->write[i], full_pathname);
+	return;
+      }
+      i++;
+    }
+  }
+  return;
+}
+
+int check_cache (uid_t id, char *syscall, const char *pathname, int fd, char *full_pathname)
+{
+  cache_entry *entry = NULL;
+  int i = 0;
+  int found = 0;
+  int ans;
+
+  if(down_interruptible(&sem))
+    return 0;
+  
+  while(i < 100) {
+    if (cache[i]->user_id == id) {
+      entry = cache[i];
+      found = 1;
+      break;
+    }
+    else {
+      if (cache[i]->user_id == 0) {
+	entry = cache[i];
+	break;
+      }
+    }
+
+    i++;
+  }
+
+  if (found) {
+    if (strcmp(syscall, "open") == 0) {
+      for (i = 0; i < 100; i++) {
+	if (strcmp(full_pathname, entry->open[i]) == 0) {
+	  up(&sem);
+	  return 1;
+	}
+      }
+    }
+
+    if (strcmp(syscall, "read") == 0) {
+      for (i = 0; i < 100; i++) {
+	if (strcmp(full_pathname, entry->read[i]) == 0){
+	  up(&sem);
+	  return 1;
+	}
+      }
+    }
+
+    if (strcmp(syscall, "write") == 0) {
+      for (i = 0; i < 100; i++) {
+	if (strcmp(full_pathname, entry->write[i]) == 0){
+	  up(&sem);
+	  return 1;
+	}
+      }
+    }
+    up(&sem);
+    ans = pm_blocking("processcall", -1, pathname, fd, syscall);
+    if(down_interruptible(&sem))
+      return 0;
+    if (ans) {
+      add_to_cache(entry, syscall, full_pathname);
+      up(&sem);
+      return 1;
+    }
+    else {
+      up(&sem);
+      return 0;
+    }
+  }
+
+  else {
+    entry->user_id = id;
+    for (i = 0; i < 100; i++) {
+      entry->open[i] = kmalloc(1000, GFP_USER);
+      strcpy(entry->open[i], "empty");
+      entry->read[i] = kmalloc(1000, GFP_USER);
+      strcpy(entry->read[i], "empty");
+      entry->write[i] = kmalloc(1000, GFP_USER);
+      strcpy(entry->write[i], "empty");
+    }
+    up(&sem);
+    ans = pm_blocking("processcall", -1, pathname, fd, syscall);
+    if(down_interruptible(&sem))
+      return 0;
+    if (ans) {
+      add_to_cache(entry, syscall, full_pathname);
+      up(&sem);
+      return 1;
+    }
+    up(&sem);
+    return 0;
+  }
+  up(&sem);
+  return 0;
+}
+
 asmlinkage long (*ref_sys_setxattr)(const char *path, const char *name, const void *value, size_t size, int flags);
 
 asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value, size_t size, int flags)
@@ -310,6 +428,8 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
  asmlinkage long new_sys_open(const char *pathname, int flags)
 {
   int ans;
+  uid_t id;
+  char full_pathname[1000];
   
   if (down_interruptible(&sem))
     return 0;
@@ -317,7 +437,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
   {
     
     get_path(-1, pathname, "open");
-  
+    
     if(strstr(file_pathname, "pm-files") != NULL || strstr(file_pathname, "bobtest") != NULL)
     {
       if (policy_machine_running == 0) {
@@ -325,12 +445,23 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 	return -1;
       }
      
+      /*up(&sem);
+	ans = pm_blocking("processcall", -1, pathname, -1, "open");*/
+      //up(&sem);
+      id = getuid();
+      strcpy(full_pathname, file_pathname);
       up(&sem);
-      ans = pm_blocking("processcall", -1, pathname, -1, "open");
-      if (ans) 
-	return ref_sys_open(pathname, flags);    
-      else
+      ans = check_cache(id, "open", pathname, -1, full_pathname);
+      if(down_interruptible(&sem))
+	return 0;
+      if (ans) {
+	up(&sem);
+	return ref_sys_open(pathname, flags);
+      }
+      else {
+	up(&sem);
 	return -1;
+      }
     }
 
     /*else if (strstr(file_pathname, "/home") == NULL) {
@@ -355,7 +486,8 @@ asmlinkage long (*ref_sys_read)(int fd, void *buf, size_t count);
 asmlinkage long new_sys_read(int fd, void *buf, size_t count)
 {
   int ans;
-  
+  uid_t id;
+  char full_pathname[1000];
   if (down_interruptible(&sem))
     return 0;
 
@@ -376,11 +508,19 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
     }
     
     up(&sem);
-    ans = pm_blocking("processcall", -1, "blank", fd, "read");
-    if (ans) 
+    id = getuid();
+    strcpy(full_pathname, file_pathname);
+    ans = check_cache(id, "read", "blank", fd, full_pathname);
+    if(down_interruptible(&sem))
+      return 0;
+    if (ans) {
+      up(&sem);
       return ref_sys_read(fd, buf, count);
-    else
+    }
+    else {
+      up(&sem);
       return -1;
+    }
   }
   }
 
@@ -393,7 +533,8 @@ asmlinkage long (*ref_sys_write)(int fd, void *buf, size_t count);
 asmlinkage long new_sys_write(int fd, void *buf, size_t count)
 {
   int ans;
-
+  uid_t id;
+  char full_pathname[1000];
   if (down_interruptible(&sem))
     return 0;
 
@@ -408,13 +549,21 @@ asmlinkage long new_sys_write(int fd, void *buf, size_t count)
 	  up(&sem);
 	  return -1;
 	}
-
 	up(&sem);
-	ans = pm_blocking("processcall", -1, "blank", fd, "write");
-	if (ans)
+	id = getuid();
+	strcpy(full_pathname, file_pathname);
+	ans = check_cache(id, "write", "blank", fd, full_pathname);
+	if(down_interruptible(&sem))
+	   return 0;
+	
+	if (ans) {
+	  up(&sem);
 	  return ref_sys_write(fd, buf, count);
-	else
+	}
+	else {
+	  up(&sem);
 	  return -1;
+	}
       }
     
 
@@ -458,15 +607,15 @@ static int __init interceptor_start (void)
   printk("start\n");
   if(!(sys_call_table = acquire_sys_call_table()))
     return -1;
-  printk("syscall addr: %p\n", *sys_call_table);
-  printk("doexec?: %p\n", (void *)(*sys_call_table + 3648));
-  doexec = (void *)(*sys_call_table + 3648);
-  printk("my doexec: %p\n", doexec);
-  mygetname = (void *)(*sys_call_table + 7686);
-  printk("getname: %p\n", mygetname);
   init_waitqueue_head(&wait_queue);
   sema_init(&sem, 1);
-  
+  int q;
+  for(q = 0; q < 100; q++) {
+    cache[q] = kmalloc(sizeof(cache_entry), GFP_USER);
+  }
+  for(q = 0; q < 100; q++) {
+    cache[q]->user_id = 0;
+  }
   original_cr0 = read_cr0();
 
   write_cr0(original_cr0 & ~0x00010000);
