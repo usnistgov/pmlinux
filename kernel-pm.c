@@ -117,7 +117,7 @@ asmlinkage long new_sys_execve(const char __user *filename, const char __user *c
 //Get file pathname
 void get_path (int fd, const char *pathname, const char *syscall)
 {
-  if (strcmp(syscall, "open") == 0) {
+  if (strstr(syscall, "open") != NULL) {
     
     
     if (strncmp(pathname, "/home/", 6) == 0) {
@@ -214,7 +214,12 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     //printk("pathname: %s\n", file_pathname);
     strcpy(path, file_pathname);
     systemcallname = path + 1000;
-    strcpy(systemcallname, syscallname);
+    if (strcmp(syscallname, "open-write") == 0)
+      strcpy(systemcallname, "write");
+    else if (strcmp(syscallname, "open-read") == 0)
+      strcpy(systemcallname, "read");
+    else
+      strcpy(systemcallname, syscallname);
     //printk("syscall: %s\n", syscallname);
     up(&sem);
   }
@@ -235,7 +240,13 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     strcpy(path, file_pathname);
     //printk("pathname: %s\n", path);
     systemcallname = path + 1000;
-    strcpy(systemcallname, syscallname);
+    if (strcmp(syscallname, "open-write") == 0)
+      strcpy(systemcallname, "write");
+    else if (strcmp(syscallname, "open-read") == 0)
+      strcpy(systemcallname, "read");
+    else
+      strcpy(systemcallname, syscallname);
+    
     //printk("syscall: %s\n", syscallname);
     up(&sem);
   }
@@ -291,7 +302,7 @@ void add_to_cache(cache_entry *entry, char *syscall, char *full_pathname)
     }
   }
 
-  if(strcmp(syscall, "read") == 0) {
+  if(strcmp(syscall, "read") == 0 || strcmp(syscall, "open-read") == 0) {
     while (i < 100) {
       if(strcmp(entry->read[i], "empty") == 0) {
 	strcpy(entry->read[i], full_pathname);
@@ -301,7 +312,7 @@ void add_to_cache(cache_entry *entry, char *syscall, char *full_pathname)
     }
   }
 
-  if(strcmp(syscall, "write") == 0) {
+  if(strcmp(syscall, "write") == 0 || strcmp(syscall, "open-write") == 0) {
     while (i < 100) {
       if(strcmp(entry->write[i],"empty") == 0) {
 	strcpy(entry->write[i], full_pathname);
@@ -349,7 +360,7 @@ int check_cache (uid_t id, char *syscall, const char *pathname, int fd, char *fu
       }
     }
 
-    if (strcmp(syscall, "read") == 0) {
+    if (strcmp(syscall, "read") == 0 || strcmp(syscall, "open-read") == 0) {
       for (i = 0; i < 100; i++) {
 	if (strcmp(full_pathname, entry->read[i]) == 0){
 	  up(&sem);
@@ -358,7 +369,7 @@ int check_cache (uid_t id, char *syscall, const char *pathname, int fd, char *fu
       }
     }
 
-    if (strcmp(syscall, "write") == 0) {
+    if (strcmp(syscall, "write") == 0 || strcmp(syscall, "open-write") == 0) {
       for (i = 0; i < 100; i++) {
 	if (strcmp(full_pathname, entry->write[i]) == 0){
 	  up(&sem);
@@ -461,7 +472,10 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
   int ans;
   uid_t id;
   char full_pathname[1000];
-
+  int temp;
+  int wans;
+  int rans;
+  
   if (down_interruptible(&sem))
     return 0;
   if (inProcs(task_pid_nr(current)))
@@ -481,7 +495,34 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
       id = getuid();
       strcpy(full_pathname, file_pathname);
       up(&sem);
-      ans = check_cache(id, "open", pathname, -1, full_pathname);
+     
+      if ((flags & O_APPEND) || (flags & O_TRUNC) || (flags & O_WRONLY) || (flags & O_RDWR)) {
+	ans = check_cache(id, "open-write", pathname, -1, full_pathname);
+	if (!ans)
+	  return -1;
+      }
+
+      if (flags & O_RDONLY) {
+	ans = check_cache(id, "open-read", pathname, -1, full_pathname);
+	if(!ans)
+	  return -1;
+      }
+      
+      if (flags & O_RDWR) {
+	if(!ans)
+	  return -1;
+	ans = check_cache(id, "open-read", pathname, -1, full_pathname);
+	if(!ans)
+	  return -1;
+      }
+
+      if ((flags & O_CREAT) || (flags & O_TMPFILE)) {
+	//create privileges
+	printk("create stuff\n");
+      }
+      else
+	ans = check_cache(id, "open", pathname, -1, full_pathname);
+
       if(down_interruptible(&sem))
 	return 0;
       if (ans) {
