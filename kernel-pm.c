@@ -32,6 +32,7 @@
 #include <linux/path.h>
 #include <linux/rcupdate.h>
 #include <linux/slab.h>
+#include <linux/namei.h>
 
 unsigned long **sys_call_table;
 unsigned long original_cr0;
@@ -116,8 +117,6 @@ asmlinkage long new_sys_execve(const char __user *filename, const char __user *c
 //Get file pathname
 void get_path (int fd, const char *pathname, const char *syscall)
 {
-  char buffer[1000];
-  ssize_t ret;
   if (strcmp(syscall, "open") == 0) {
     
     
@@ -129,16 +128,21 @@ void get_path (int fd, const char *pathname, const char *syscall)
       char *cwd;
       struct path *path;
       char buf[1000];
-    
+      struct dentry *dent;
+     
       path = &(current -> fs -> pwd);
       path_get(path);
       cwd = d_path(path, buf, 1000*sizeof(char));
+      //dent = path->dentry;
+      //cwd = dent->d_name.name;
       path_put(path);
       strcpy(file_pathname, cwd);
       if(strncmp(pathname, "/", 1) != 0) {
 	strcat(file_pathname, "/");
       }
       strcat(file_pathname, pathname);
+
+      printk("pathname: %s\n", file_pathname);
       
     }
     
@@ -403,6 +407,23 @@ int check_cache (uid_t id, char *syscall, const char *pathname, int fd, char *fu
   return 0;
 }
 
+void clear_cache(void) {
+
+  int i;
+  int j;
+
+  for (i = 0; i < 100; i++) {
+    if (cache[i]->user_id != 0) {
+    for (j = 0; j < 100; j++) {
+      strcpy(cache[i]->open[j], "empty");
+      strcpy(cache[i]->read[j], "empty");
+      strcpy(cache[i]->write[j], "empty");
+    }
+    }
+    cache[i]->user_id = 0;
+  }
+}
+    
 asmlinkage long (*ref_sys_setxattr)(const char *path, const char *name, const void *value, size_t size, int flags);
 
 asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value, size_t size, int flags)
@@ -423,7 +444,12 @@ asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value
     num_procs++;
     up(&sem);
     return -1;
-  }  
+  }
+
+  if (strcmp(name, "/.../policyupdate") == 0) {
+    clear_cache();
+    return -1;
+  }
 
   return (ref_sys_setxattr(path, name, value, size, flags));
 }
