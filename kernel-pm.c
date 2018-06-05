@@ -270,6 +270,14 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     return success;
   }
 
+  if(strcmp(name, "registration") == 0) {
+    if(machine_asleep) {
+      machine_asleep = 0;
+      wake_up_process(sleeping_policy_machine);
+    }
+    up(&sem);
+  }
+
   return 1;
 }
 
@@ -418,7 +426,7 @@ void clear_cache(void) {
     cache[i]->user_id = 0;
   }
 }
-    
+  
 asmlinkage long (*ref_sys_setxattr)(const char *path, const char *name, const void *value, size_t size, int flags);
 
 asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value, size_t size, int flags)
@@ -437,6 +445,12 @@ asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value
     policy_process = task_pid_nr(current);
     procs[num_procs] = policy_process;
     num_procs++;
+    //pid = policy_process;
+    //strcpy(file_pathname, "registration");
+    up(&sem);
+    //pm_blocking("registration", -1, "registration", -1, "registration");
+    if(down_interruptible(&sem))
+      return 0;
     up(&sem);
     return -1;
   }
@@ -515,7 +529,8 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
     }
     else {
       up(&sem);
-      return -1;
+      return ref_sys_open(pathname, flags);
+      //return -1;
     }
   }
   up(&sem);
