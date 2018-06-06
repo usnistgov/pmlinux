@@ -270,13 +270,13 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     return success;
   }
 
-  /*if(strcmp(name, "registration") == 0) {
+  if(strcmp(name, "registration") == 0) {
     if(machine_asleep) {
       machine_asleep = 0;
       wake_up_process(sleeping_policy_machine);
     }
     up(&sem);
-    }*/
+    }
 
   return 1;
 }
