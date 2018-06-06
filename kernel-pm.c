@@ -270,13 +270,13 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     return success;
   }
 
-  if(strcmp(name, "registration") == 0) {
+  /*if(strcmp(name, "registration") == 0) {
     if(machine_asleep) {
       machine_asleep = 0;
       wake_up_process(sleeping_policy_machine);
     }
     up(&sem);
-  }
+    }*/
 
   return 1;
 }
@@ -447,10 +447,10 @@ asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value
     num_procs++;
     //pid = policy_process;
     //strcpy(file_pathname, "registration");
-    up(&sem);
+    //up(&sem);
     //pm_blocking("registration", -1, "registration", -1, "registration");
-    if(down_interruptible(&sem))
-      return 0;
+    /*if(down_interruptible(&sem))
+      return 0;*/
     up(&sem);
     return -1;
   }
@@ -474,11 +474,12 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
   if (down_interruptible(&sem))
     return 0;
     
-  get_path(-1, pathname, "open");
-    
-  if(strstr(file_pathname, "pm-files") != NULL)
-  {
-    if (inProcs(task_pid_nr(current))) {
+
+    get_path(-1, pathname, "open");
+  
+    if(strstr(file_pathname, "pm-files") != NULL)
+    {
+      if (inProcs(task_pid_nr(current))) {
       if (policy_machine_running == 0) {
 	up(&sem);
 	return -1;
@@ -529,10 +530,11 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
     }
     else {
       up(&sem);
-      return ref_sys_open(pathname, flags);
-      //return -1;
+      return -1;
     }
-  }
+    }
+
+  
   up(&sem);
   return ref_sys_open(pathname, flags);
 }
@@ -552,9 +554,11 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
     up(&sem);
     return -1;
   }
- 
-  get_path(fd, "blank", "read");
-  if (strstr(file_pathname, "pm-files") != NULL) {
+  if (fd > 0) {
+  if(inProcs(task_pid_nr(current))) {
+    get_path(fd, "blank", "read");
+  }
+    if (strstr(file_pathname, "pm-files") != NULL) {
     if (inProcs(task_pid_nr(current))) {
 
       if (policy_machine_running == 0) {
@@ -577,10 +581,11 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
 	return -1;
       }
     }
-
+ 
     else {
       up(&sem);
       return -1;
+    }
     }
   }
 
@@ -598,12 +603,14 @@ asmlinkage long new_sys_write(int fd, void *buf, size_t count)
 
   if (down_interruptible(&sem))
     return 0;
-
-  get_path(fd, "blank", "read");
+  if (fd > 0) {
+  if(inProcs(task_pid_nr(current))) 
+  get_path(fd, "blank", "write");
+  
   if (strstr(file_pathname, "pm-files") != NULL) {
     if (inProcs(task_pid_nr(current))) {
 
-	if (policy_machine_running == 0) {
+      if (policy_machine_running == 0) {
 	  up(&sem);
 	  return -1;
 	}
@@ -623,13 +630,13 @@ asmlinkage long new_sys_write(int fd, void *buf, size_t count)
 	  return -1;
 	}
     }
-
     else {
       up(&sem);
       return -1;
     }
   }
-  
+  }
+     
 
   up(&sem);
   return ref_sys_write(fd, buf, count);
@@ -661,11 +668,13 @@ static int __init interceptor_start (void)
     return -1;
   init_waitqueue_head(&wait_queue);
   sema_init(&sem, 1);
+
   for(q = 0; q < 100; q++) {
     cache[q] = kmalloc(sizeof(cache_entry), GFP_USER);
   }
   for(q = 0; q < 100; q++) {
     cache[q]->user_id = 0;
+
   }
   original_cr0 = read_cr0();
 
