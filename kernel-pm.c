@@ -87,7 +87,7 @@ asmlinkage long (*getuid)(void);
 
 asmlinkage long (*ref_sys_execve)(const char __user *filename, const char __user *const __user *argv, const char __user *const __user*envp);
 
-asmlinkage long (*ref_sys_doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
+//asmlinkage long (*ref_sys_doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
 
 asmlinkage long new_sys_execve(const char __user *filename, const char __user *const __user *argv, const char __user *const __user *envp)
 {
