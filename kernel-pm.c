@@ -1,3 +1,8 @@
+/*
+To insert kernel module:
+sudo insmod kernel-pm.ko
+*/
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -87,8 +92,10 @@ asmlinkage long (*getuid)(void);
 
 asmlinkage long (*ref_sys_execve)(const char __user *filename, const char __user *const __user *argv, const char __user *const __user*envp);
 
-//asmlinkage long (*ref_sys_doexec)(struct filename *filename, const char __user *const __user *argv, const char __user *const __user *envp);
+/*Useful links:
 
+
+ */
 asmlinkage long new_sys_execve(const char __user *filename, const char __user *const __user *argv, const char __user *const __user *envp)
 {
   long ret;
@@ -108,11 +115,14 @@ asmlinkage long new_sys_execve(const char __user *filename, const char __user *c
 
 }
 
+/*Useful links:
+http://tuxthink.blogspot.com/2011/12/module-to-display-current-working.html
+*/
+  
 //Get file pathname
 void get_path (int fd, const char *pathname, const char *syscall)
 {
-  if (strstr(syscall, "open") != NULL) {
-    
+  if (strstr(syscall, "open") != NULL) {  
     
     if (strncmp(pathname, "/home/", 6) == 0) {
       strcpy(file_pathname, pathname);
@@ -163,8 +173,10 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
   uid_t *user;
   char *path;
   char *systemcallname;
+  printk("in pmblocking\n");
   
   if (strcmp(name, "policymachinecall") == 0 && flags == 0) {
+    printk("in no\n");
     if(down_interruptible(&sem))
       return 0;    
     answer_waiting = 0;
@@ -174,6 +186,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
   }
   
   else if (strcmp(name, "policymachinecall") == 0 && flags == 1) {
+    printk("in yes\n");
     if(down_interruptible(&sem))
       return 0;
     answer_waiting = 0;
@@ -186,6 +199,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     return 0;
 
   if (strcmp(name, "policymachinecall") == 0 && process_waiting) {
+    printk("in proc waiting\n");
     process_waiting--;
     sleeping_policy_machine = current;
     wake_up(&wait_queue);
@@ -212,6 +226,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
   }
 
   else if (strcmp(name, "policymachinecall") == 0 && !process_waiting) {
+    printk("in no proc waiting\n");
     sleeping_policy_machine = current;
     machine_asleep = 1;
     up(&sem);
@@ -236,6 +251,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
   }
     
   if (strcmp(name, "processcall") == 0 && answer_waiting) {
+    printk("in ans waiting\n");
     process_waiting++;
     while(answer_waiting) {
       DEFINE_WAIT(wait);
@@ -251,6 +267,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
   }
 
   if (strcmp(name, "processcall") == 0 && !answer_waiting) {
+    printk("in no ans waiting\n");
     answer_waiting = 1;
     sleeping_policy_process = current;
 
@@ -270,14 +287,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     return success;
   }
 
-  if(strcmp(name, "registration") == 0) {
-    if(machine_asleep) {
-      machine_asleep = 0;
-      wake_up_process(sleeping_policy_machine);
-    }
-    up(&sem);
-    }
-
+  up(&sem);
   return 1;
 }
 
@@ -431,7 +441,7 @@ asmlinkage long (*ref_sys_setxattr)(const char *path, const char *name, const vo
 
 asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value, size_t size, int flags)
 {
-  
+  printk("in setxattr\n");
   if (strcmp(name, "/.../policymachinecall") == 0) {
     if (!policy_machine_running && flags != 1 && flags != 0)
       policy_machine_running = 1;
@@ -445,12 +455,6 @@ asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value
     policy_process = task_pid_nr(current);
     procs[num_procs] = policy_process;
     num_procs++;
-    //pid = policy_process;
-    //strcpy(file_pathname, "registration");
-    //up(&sem);
-    //pm_blocking("registration", -1, "registration", -1, "registration");
-    /*if(down_interruptible(&sem))
-      return 0;*/
     up(&sem);
     return -1;
   }
@@ -474,12 +478,12 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
   if (down_interruptible(&sem))
     return 0;
     
+  if(inProcs(task_pid_nr(current))) {
 
     get_path(-1, pathname, "open");
-  
+
     if(strstr(file_pathname, "pm-files") != NULL)
     {
-      if (inProcs(task_pid_nr(current))) {
       if (policy_machine_running == 0) {
 	up(&sem);
 	return -1;
@@ -488,7 +492,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
       strcpy(full_pathname, file_pathname);
       up(&sem);
      
-      if ((flags & O_APPEND) || (flags & O_TRUNC) || (flags & O_WRONLY) || (flags & O_RDWR)) {
+      /*if ((flags & O_APPEND) || (flags & O_TRUNC) || (flags & O_WRONLY) || (flags & O_RDWR)) {
 	ans = check_cache(id, "open-write", pathname, -1, full_pathname);
 	if (!ans)
 	  return -1;
@@ -512,9 +516,9 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 	//create privileges
 	printk("create stuff\n");
       }
-      else
-	ans = check_cache(id, "open", pathname, -1, full_pathname);
-
+      else*/
+      ans = check_cache(id, "open", pathname, -1, full_pathname);
+     
       if(down_interruptible(&sem))
 	return 0;
 
@@ -528,13 +532,13 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 	return -1;
       }
     }
+
     else {
       up(&sem);
-      return -1;
+      return ref_sys_open(pathname, flags);
     }
-    }
-
-  
+  }
+    
   up(&sem);
   return ref_sys_open(pathname, flags);
 }
@@ -557,9 +561,8 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
   if (fd > 0) {
   if(inProcs(task_pid_nr(current))) {
     get_path(fd, "blank", "read");
-  }
+  
     if (strstr(file_pathname, "pm-files") != NULL) {
-    if (inProcs(task_pid_nr(current))) {
 
       if (policy_machine_running == 0) {
 	up(&sem);
@@ -584,14 +587,13 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
  
     else {
       up(&sem);
-      return -1;
-    }
+      return ref_sys_read(fd, buf, count);
     }
   }
-
+  }
   up(&sem);
   return ref_sys_read(fd, buf, count);
-}
+}  
 
 asmlinkage long (*ref_sys_write)(int fd, void *buf, size_t count);
 
@@ -634,6 +636,11 @@ asmlinkage long new_sys_write(int fd, void *buf, size_t count)
       up(&sem);
       return -1;
     }
+  }
+
+  else {
+    up(&sem);
+    return ref_sys_write(fd, buf, count);
   }
   }
      
