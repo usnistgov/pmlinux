@@ -246,7 +246,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
     else if (strcmp(syscallname, "open-read") == 0)
       strcpy(systemcallname, "read");
     else
-      strcpy(systemcallname, syscallname);
+    strcpy(systemcallname, syscallname);
     up(&sem);
   }
     
@@ -262,7 +262,7 @@ int pm_blocking (const char *name, int flags, const char *pathname, int fd, cons
       finish_wait(&wait_queue, &wait);
       if (down_interruptible(&sem))
 	return 0;
-      while(!machine_asleep);
+      //while(!machine_asleep);
     }
   }
 
