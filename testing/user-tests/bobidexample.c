@@ -8,58 +8,51 @@ int main(void) {
   int i;
   int id;
   
-  id = syscall(SYS_open, "/home/kfulton/access-control/pm-files/hello-file/hello.txt", O_RDWR);
+  id = syscall(SYS_open, "/home/kfulton/pm-linux/testing/pm-test-files/hello-file/hello.txt", O_RDWR);
 
-  if (id > 0) {
-    printf("hello\n");
-    printf("Opened with success\n");
-  }
+  if (id > 0) 
+    printf("Opened hello.txt with success\n");
+  
   
   char buf[20] = "hello";
   i = syscall(SYS_read, id, buf, 10);
 
-  if (i > 0) {
-    printf("%s\n", buf);
-    printf("Read with success\n");
-  }
+  if (i > 0) 
+    printf("Read hello.txt with success\n");
+  
   
   i = syscall(SYS_write, id, "test write", 11);
 
   if (i > 0)
-    printf("Wrote with success\n");
+    printf("Wrote test.txt with success\n");
   
-  printf("%s\n", buf);
   syscall(SYS_close, id);
 
-  id = syscall(SYS_open, "/home/kfulton/access-control/pm-files/test1.txt", O_RDWR);
+  id = syscall(SYS_open, "/home/kfulton/pm-linux/testing/pm-test-files/test1.txt", O_RDWR);
 
-  if (id > 0) {
-    printf("test1\n");
-    printf("Opened with success\n");
-  }
+  if (id > 0) 
+    printf("Opened test1.txt with success\n");
+  
   
   i = syscall(SYS_read, id, buf, 10);
 
-  if (i > 0) {
-    printf("%s\n", buf);
-    printf("Read with success\n");
-  }
+  if (i > 0) 
+    printf("Read test1.txt with success\n");
+  
   
   syscall(SYS_close, id);
   
-  id = syscall(SYS_open, "/home/kfulton/access-control/pm-files/test-file/test1/test.txt", O_RDWR);
+  id = syscall(SYS_open, "/home/kfulton/pm-linux/testing/pm-test-files/test-file/test1/test.txt", O_RDWR);
 
-  if (id > 0) {
-    printf("test\n");
-    printf("Opened with success\n");
-  }
+  if (id > 0) 
+    printf("Opened test.txt with success\n");
+  
   
   i = syscall(SYS_read, id, buf, 10);
 
-  if (i > 0) {
-    printf("%s\n", buf);
-    printf("Read with success\n");
-  }
+  if (i > 0) 
+    printf("Read test.txt with success\n");
+  
   
   syscall(SYS_close, id);
   
