@@ -1,0 +1,1 @@
+java -classpath .\LinuxPM.jar;.\mysql-connector-java-5.1.31-bin.jar  pm.PMAccess user object
