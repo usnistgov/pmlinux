@@ -482,7 +482,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 
     get_path(-1, pathname, "open");
 
-    if(strstr(file_pathname, "pm-files") != NULL)
+    if(strstr(file_pathname, "pm-test-files") != NULL)
     {
       if (policy_machine_running == 0) {
 	up(&sem);
@@ -530,7 +530,8 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
       else {
 	up(&sem);
 	return -1;
-      }
+	}
+      //return ref_sys_open(pathname, flags);
     }
 
     else {
