@@ -1,18 +1,18 @@
 open
 
 hello.txt
-1001
+1003
 test1.txt
-1001 1002
+1003 1002
 test.txt
-1001 1002
+1003 1002
 bobtest.txt
-1001
+1003
 
 read
 
 hello.txt
-1001
+1003
 test1.txt
 1002
 test.txt

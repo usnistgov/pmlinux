@@ -531,11 +531,12 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 	up(&sem);
 	return -1;
 	}
-      //return ref_sys_open(pathname, flags);
+	//return ref_sys_open(pathname, flags);
     }
 
     else {
       up(&sem);
+      printk("not in right dir\n");
       return ref_sys_open(pathname, flags);
     }
   }

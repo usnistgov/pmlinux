@@ -8,7 +8,7 @@ public class pmtest {
     
     public static void main(String[] args) {
 	System.loadLibrary("pm");
-	int decision;
+	int decision = 1;
 	//Random rand = new Random();
 	pmtest test = new pmtest();
 	String[] decision_info = new String[4];
@@ -17,19 +17,20 @@ public class pmtest {
 	System.out.println("loop");
 	int x = 4;
 	while(x>=0) {
-	    decision  = 1;
 	    //System.out.println(decision);
-	    for (int i = 0; i < 4; i++) 
+	    //for (int i = 0; i < 4; i++) 
 		//System.out.println(decision_info[i]);
 	    if (decision == 1) {
+		//decision = 0;
 		//System.out.println("yes");
 		decision_info = test.yes();
 	    }
 	    else {
+		//decision = 1;
 		//System.out.println("no");    
 		decision_info = test.no();
 	    }
-	    x--;
+	    //x--;
 	}
     }
 }
