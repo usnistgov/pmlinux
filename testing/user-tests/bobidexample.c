@@ -24,7 +24,7 @@ int main(void) {
   i = syscall(SYS_write, id, "test write", 11);
 
   if (i > 0)
-    printf("Wrote test.txt with success\n");
+    printf("Wrote hello.txt with success\n");
   
   syscall(SYS_close, id);
 
