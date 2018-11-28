@@ -564,7 +564,7 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
   if(inProcs(task_pid_nr(current))) {
     get_path(fd, "blank", "read");
   
-    if (strstr(file_pathname, "pm-files") != NULL) {
+    if (strstr(file_pathname, "pm-test-files") != NULL) {
 
       if (policy_machine_running == 0) {
 	up(&sem);
@@ -611,7 +611,7 @@ asmlinkage long new_sys_write(int fd, void *buf, size_t count)
   if(inProcs(task_pid_nr(current))) 
   get_path(fd, "blank", "write");
   
-  if (strstr(file_pathname, "pm-files") != NULL) {
+  if (strstr(file_pathname, "pm-test-files") != NULL) {
     if (inProcs(task_pid_nr(current))) {
 
       if (policy_machine_running == 0) {
