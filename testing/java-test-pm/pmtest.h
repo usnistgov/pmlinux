@@ -12,7 +12,7 @@ extern "C" {
  * Method:    init
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_pmtest_init
+JNIEXPORT jobjectarray JNICALL Java_pmtest_init
   (JNIEnv *, jobject);
 
 /*

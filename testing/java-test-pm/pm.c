@@ -29,7 +29,7 @@ typedef struct
 decision_info request_info;
 jobjectArray ret_info;
 
-JNIEXPORT void JNICALL Java_pmtest_init
+JNIEXPORT jobjectArray JNICALL Java_pmtest_init
 (JNIEnv * env, jobject jobj)
 {
   char conv[10];
@@ -63,7 +63,7 @@ JNIEXPORT void JNICALL Java_pmtest_init
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
   
   printf("returning init\n");
-  //return ret_info;
+  return ret_info;
   
   //Malloc space for each individual entry in array
   //Copy entries in struct to array
@@ -93,6 +93,8 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_yes
   pathname = (*env)->NewStringUTF(env, &(request_info.pathname));
   system_call =(*env)->NewStringUTF(env, &(request_info.system_call));
 
+  ret_info = (*env)->NewObjectArray(env, len, (*env)->FindClass(env, "java/lang/String"), 0);
+  
   (*env)->SetObjectArrayElement(env, ret_info, 0, process_id);
   (*env)->SetObjectArrayElement(env, ret_info, 1, user_id);
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
