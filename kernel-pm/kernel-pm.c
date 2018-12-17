@@ -517,8 +517,8 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 	printk("create stuff\n");
       }
       else*/
-      //ans = check_cache(id, "open", pathname, -1, full_pathname);
-      ans = pm_blocking("processcall", -1, pathname, -1, "open"); 
+      ans = check_cache(id, "open", pathname, -1, full_pathname);
+      //ans = pm_blocking("processcall", -1, pathname, -1, "open"); 
       if(down_interruptible(&sem))
 	return 0;
 
@@ -574,8 +574,8 @@ asmlinkage long new_sys_read(int fd, void *buf, size_t count)
       up(&sem);
       id = getuid();
       strcpy(full_pathname, file_pathname);
-      //ans = check_cache(id, "read", "blank", fd, full_pathname);
-      ans = pm_blocking("processcall", -1, "blank", fd, "read");
+      ans = check_cache(id, "read", "blank", fd, full_pathname);
+      //ans = pm_blocking("processcall", -1, "blank", fd, "read");
       if(down_interruptible(&sem))
 	return 0;
       if (ans) {
@@ -622,8 +622,8 @@ asmlinkage long new_sys_write(int fd, void *buf, size_t count)
 	up(&sem);
 	id = getuid();
 	strcpy(full_pathname, file_pathname);
-	//ans = check_cache(id, "write", "blank", fd, full_pathname);
-	ans = pm_blocking("processcall", -1, "blank", fd, "write");
+	ans = check_cache(id, "write", "blank", fd, full_pathname);
+	//ans = pm_blocking("processcall", -1, "blank", fd, "write");
 	if(down_interruptible(&sem))
 	   return 0;
 	

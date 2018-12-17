@@ -40,14 +40,14 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_init
   int i;
   jsize len = 4;
 
-  printf("setxattr init\n");
+  //printf("setxattr init\n");
   
   syscall(SYS_read, -100, &request_info, 1);
-  printf("struct set up\n");
+  //printf("struct set up\n");
   syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 100);
   
 
-  printf("getting info\n");
+  //printf("getting info\n");
   sprintf(conv, "%d", request_info.process_id);
   process_id= (*env)->NewStringUTF(env, &conv);
   sprintf(conv, "%d", request_info.user_id);
@@ -62,7 +62,7 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_init
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
   
-  printf("returning init\n");
+  //printf("returning init\n");
   return ret_info;
   
   //Malloc space for each individual entry in array
@@ -83,9 +83,9 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_yes
   int i;
   jsize len = 4;
 
-  printf("setxattr yes\n");
+  //printf("setxattr yes\n");
   syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 1);
-  printf("getting info\n");
+  //printf("getting info\n");
   sprintf(conv, "%d", request_info.process_id);
   process_id= (*env)->NewStringUTF(env, &conv);
   sprintf(conv, "%d", request_info.user_id);
@@ -99,7 +99,7 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_yes
   (*env)->SetObjectArrayElement(env, ret_info, 1, user_id);
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
-  printf("returning yes\n");
+  //printf("returning yes\n");
   return ret_info;
   
   //copy entries in struct to array
@@ -116,9 +116,9 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_no
   jstring system_call;
   int i;
   jsize len = 4;
-  printf("setxattr no\n");
+  //printf("setxattr no\n");
   syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 0);
-  printf("getting info\n");
+  //printf("getting info\n");
   sprintf(conv, "%d", request_info.process_id);
   process_id= (*env)->NewStringUTF(env, &conv);
   sprintf(conv, "%d", request_info.user_id);
@@ -132,7 +132,7 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_no
   (*env)->SetObjectArrayElement(env, ret_info, 1, user_id);
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
-  printf("returning no\n");
+  //printf("returning no\n");
   return ret_info;
   
   //copy entries in struct to array

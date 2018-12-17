@@ -1,4 +1,5 @@
 //import java.util.Random;
+import java.io.*;
 
 public class pmtest {
 
@@ -8,29 +9,54 @@ public class pmtest {
     
     public static void main(String[] args) {
 	System.loadLibrary("pm");
-	int decision = 0;
-	//Random rand = new Random();
+	
 	pmtest test = new pmtest();
-	System.out.println("Initializing");
 	String[] decision_info = test.init();
-	System.out.println("loop");
-	int x = 4;
-	while(x>=0) {
-	    //System.out.println(decision);
-	    for (String info:decision_info) {
-		    System.out.println(info);
-	    }
-	    if (decision == 1) {
-		decision = 0;
-		//System.out.println("yes");
+	
+	int x = 1;
+	while(x>0) {
+	    
+	    int ans = get_decision(decision_info[0], decision_info[1], decision_info[2], decision_info[3]);
+	    
+	    if (ans == 1) {
 		decision_info = test.yes();
 	    }
-	    else {
-		decision = 1;
-		//System.out.println("no");    
+	    else {    
 		decision_info = test.no();
 	    }
-	    //x--;
+	   
 	}
+    }
+
+    public static int get_decision(String process_id, String user_id, String pathname, String system_call) {
+	
+	try {
+	    BufferedReader reader = new BufferedReader(new FileReader("db.txt"));
+	    String line;
+	    while ((line = reader.readLine()) != null && !line.contains(system_call)){
+	    }
+	    if (line != null){
+		while((line = reader.readLine()) != null && !pathname.contains(line)){
+		}
+		if (line != null) {
+		    line = reader.readLine();
+		    if (line.contains(user_id)) {
+			reader.close();
+			return 1;
+		    }
+		}
+	    }
+
+	    else {
+		reader.close();
+		return 0;
+	    }
+	}
+	catch (Exception e)
+	    {
+		System.err.format("Exception occurred trying to read db.txt");
+      		return 0;
+	    }
+	return 0;
     }
 }
