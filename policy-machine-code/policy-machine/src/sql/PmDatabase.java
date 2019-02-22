@@ -14,7 +14,7 @@ public class PmDatabase {
 	//Edit the connection to a database
  	   try{
   	     Class.forName("com.mysql.jdbc.Driver");
- 		 conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/","root","password");
+ 		 conn = DriverManager.getConnection("jdbc:mysql://localhost/policydb","root","password");
  	   } catch (Exception e) {
  		  System.out.println("SQLException: " + e.getMessage());
  	   }

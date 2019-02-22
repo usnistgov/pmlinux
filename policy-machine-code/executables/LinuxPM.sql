@@ -3824,7 +3824,9 @@ INSERT INTO `node` (`node_id`, `node_type_id`, `name`, `description`) VALUES
 	(485, 3, 'John', 'John'),
 	(486, 4, 'john', 'john'),
 	(487, 7, 'A28CE122', 'A28CE122'),
-	(488, 7, '7C226BD7', '7C226BD7');
+	(488, 7, '7C226BD7', '7C226BD7'),
+	(489, 4, 'jeff', 'jeff'),
+	(490, 6, 'hello.txt', 'hello.txt');
 /*!40000 ALTER TABLE `node` ENABLE KEYS */;
 
 -- Dumping structure for table policydb.node_property
