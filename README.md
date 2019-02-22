@@ -36,3 +36,13 @@ Once your code is recompiled, we are ready to boot the new kernel code.
 6) To compile, run the following command: make.
 
 7) To insert/use the module, run the following command: sudo insmod kernel-pm.ko. The system will prompt you to enter your password. 
+
+The following steps are required to use the database (without the module):
+
+1) Create a directory pm in your home space
+
+2) Create a directory pm-linux within pm. Put all of the code from this repository in this directory
+
+3) Run LinuxPM.sql first in ~/pm/pm-linux/policy-machine-code/executables using the following command: mysql -u root -p < LinuxPM.sql
+
+4) Run java -cp ~/pm/pm-linux/policy-machine-code/policy-machine/dist/lib/LinuxPM.jar:mysql-connector-java-5.1.31-bin.jar pm.PMAccess user object from ~/pm/pm-linux/policy-machine-code/policy-machine/build/pm
