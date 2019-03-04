@@ -1,0 +1,69 @@
+The following are the instructions you need to complete in order to use the module, the stand in policy machine, and the testing code in the repository.
+
+
+Editing and compiling the kernel:
+
+1) In order to use the kernel module as it stands, we have to make a few small edits to a copy of the linux operating system, compile the edited version, and boot the edited version.
+
+2) Start by cloning the appropriate git repo: git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git
+
+3) Add:
+   - EXPORT_SYMBOL(do_execve) to ~/ubuntu-xenial/fs/exec.c
+   - EXPORT_SYMBOL(getname) to ~/ubuntu-xenial/fs/namei.c
+
+4) Check source code in system settings"->"software & updates"->"Source code" to allow for some library installs
+
+5) Run sudo apt-get install libncurses5-dev libncursesw5-dev
+
+6) Run sudo apt-get build-dep linux-image-$(uname -r)
+
+7) To compile the OS code, change into the topmost directory (ubuntu-xenial) and run:
+   - fakeroot debian/rules clean
+   - fakeroot debian/rules binary-headers binary-generic binary-perarch
+
+8) Once compilation is complete, there should be several linux-*.deb files in the home directory. In order to use these, you must run the follwing command:
+   - sudo dpkg -i linux*4.8.0-17.19*.deb
+
+   The numbers in this command may need to be changed to match the numbers in your own *.deb files.
+
+9) Now type sudo reboot to restart the machine. While restarting, hold down the shift key to bring up the grub menu. From this menu, be sure to select your version of the OS that you just compiled.
+
+
+Cloning and setting up repo
+
+1) Start by creating an outermost directory called pm.
+
+2) Then create a directory within this called pm-linux.
+
+3) Clone the repository into this directory.
+
+4) You will need to edit all of the paths in the repo to resolve to your directories.
+   - ~/pm/pm-linux/testing/user-tests
+	- You need to edit all of the paths in the idividual files in this directory by changing the user in the path from
+	  kfulton to your own username
+
+
+Setting up for testing
+
+1) You will need to make three new users for your system. The first will be named Jeff. The second Alice. The third Bob. To create a new user you need to use the following command: adduser *name*
+
+2) Once you have these users created, you need to edit the executable they run when they login. To do this, you need to type sudo vipw. Once the password file opens, you need to add the following line in the last entry in place of /bin/bash: /home/*your username*/pm/pm-linux/policy-shell/shell
+
+3) Now you need to copy the code for each user from the ~/pm/pm-linux/testing/user-tests to each users' home directory respectively. You will also need to compile the code within each users' home directory: gcc bobidexample.c -o bobidexample
+
+4) You need to set the permission on each of the files in ~/pm/pm-linux/testing/pm-test-files so that the other users can read and write them. Use this command: chmod 666 *name of file*
+
+
+Running code
+
+1) First, compile the kernel module. To do this, go to ~/pm/pm-linux/kernel-pm. Then type make.
+
+2) In a separate terminal tab, go to ~/pm/pm-linux/testing/java-test-pm.
+
+3) Open a third terminal tab.
+
+4) Now go to the tab with the kernel code and insert the kernel module using this command: sudo insmod kernel-pm.ko.
+
+5) Back to the "java-test-pm" tab and run the stand in policy machine using this command: java -cp . -Djava.library.path=. pmtest
+
+6) Now login to each user individually and run their code. You should note that Jeff does not have permission to open, read, or write any of the test files. Bob can open and read hello.txt, open test.txt, and open test1.txt. Alice cannot do anything with hello.txt, can open and write test.txt, and open and read test1.txt.

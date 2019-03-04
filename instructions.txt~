@@ -1,0 +1,27 @@
+The following are the instructions you need to complete in order to use the module, the stand in policy machine, and the testing code in the repository.
+
+
+Editing and compiling the kernel:
+
+1) In order to use the kernel module as it stands, we have to make a few small edits to a copy of the linux operating system, compile the edited version, and boot the edited version.
+
+2) Start by cloning the appropriate git repo: git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git
+
+3) Add:
+   - EXPORT_SYMBOL(do_execve) to ~/ubuntu-xenial/fs/exec.c
+   - EXPORT_SYMBOL(getname) to ~/ubuntu-xenial/fs/namei.c
+
+4) Check source code in system settings"->"software & updates"->"Source code" to allow for some library installs
+
+5) Run sudo apt-get install libncurses5-dev libncursesw5-dev
+
+6) Run sudo apt-get build-dep linux-image-$(uname -r)
+
+7) To compile the OS code, change into the topmost directory (ubuntu-xenial) and run:
+   - fakeroot debian/rules clean
+   - fakeroot debian/rules binary-headers binary-generic binary-perarch
+
+8) Once compilation is complete, there should be several linux-*.deb files in the home directory. In order to use these, you must run the follwing command:
+   - sudo dpkg -i linux*4.8.0-17.19*.deb
+
+   The numbers in this command may need to be changed to match the numbers in your own *.deb files.
