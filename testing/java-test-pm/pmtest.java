@@ -1,4 +1,5 @@
 //import java.util.Random;
+//Stand in code for policy machine. It's using a text file as a "database" at the moment.
 import java.io.*;
 
 public class pmtest {
@@ -27,7 +28,7 @@ public class pmtest {
 	   
 	}
     }
-
+    //Place holder for policy machine
     public static int get_decision(String process_id, String user_id, String pathname, String system_call) {
 	
 	try {
