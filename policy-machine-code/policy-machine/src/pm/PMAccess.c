@@ -17,55 +17,53 @@
 #include <stdio.h>
 #include <jni.h>
 #include <math.h>
+#include <pwd.h>
 #include <string.h>
-
+#include <stdlib.h>
 typedef struct
 {
   unsigned int process_id;
   unsigned int user_id;
   char pathname[1000];
   char system_call[10];
-  //int success;
 }decision_info;
 
 decision_info request_info;
-//decision_info request_info;
-int success = 0;
+jobjectArray ret_info;
 
-JNIEXPORT jobjectArray JNICALL Java_pmtest_init
-(JNIEnv *env, jobject jobj)
+JNIEXPORT jstring JNICALL Java_PMAccess_get_1username (JNIEnv * env, jobject jobj, jstring user_id) {
+
+  struct passwd *pws;
+  char *conv = (*env)->GetStringUTFChars(env, user_id, 0);
+  int uid = atoi(conv);
+  pws = getpwuid(uid); 
+  return (*env)->NewStringUTF(env, (pws->pw_name));
+}
+
+JNIEXPORT jobjectArray JNICALL Java_PMAccess_init
+(JNIEnv * env, jobject jobj)
 {
-
   char conv[10];
   jstring process_id;
   jstring user_id;
   jstring pathname;
   jstring system_call;
   int i;
-  jobjectArray ret_info;
   jsize len = 4;
-  //int success;
-  //request_info.success = 0;
 
-  printf("setxattr init\n");
+  //printf("setxattr init\n");
   
   syscall(SYS_read, -100, &request_info, 1);
-  printf("struct set up\n");
-  while(success!=33){
-    success = syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 100);
-    sleep(.5);
-  }
+  //printf("struct set up\n");
+  syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 100);
+  
 
-  printf("getting info\n");
-  //sprintf(conv, "%d", request_info.process_id);
-  strcpy(conv, "1");
+  //printf("getting info\n");
+  sprintf(conv, "%d", request_info.process_id);
   process_id= (*env)->NewStringUTF(env, &conv);
   sprintf(conv, "%d", request_info.user_id);
-  //strcpy(conv, "1001");
   user_id = (*env)->NewStringUTF(env, &conv);
-  strcpy(request_info.pathname, "hello.txt");
   pathname = (*env)->NewStringUTF(env, &(request_info.pathname));
-  strcpy(request_info.system_call, "open");
   system_call = (*env)->NewStringUTF(env, &(request_info.system_call));
   
   ret_info = (*env)->NewObjectArray(env, len, (*env)->FindClass(env, "java/lang/String"), 0);
@@ -75,7 +73,7 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_init
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
   
-  printf("returning init\n");
+  //printf("returning init\n");
   return ret_info;
   
   //Malloc space for each individual entry in array
@@ -84,30 +82,21 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_init
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_pmtest_yes
+JNIEXPORT jobjectArray JNICALL Java_PMAccess_yes
 (JNIEnv *env, jobject jobj)
 {
 
-  
   char conv[10];
   jstring process_id;
   jstring user_id;
   jstring pathname;
   jstring system_call;
   int i;
-  jobjectArray ret_info;
   jsize len = 4;
-  //request_info.success = 0;
-  printf("setxattr yes\n");
-  
-  success = syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 1);
 
-  while(success!=33){
-    success = syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 100);
-    sleep(.5);
-  }
-  
-  printf("getting info\n");
+  //printf("setxattr yes\n");
+  syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 1);
+  //printf("getting info\n");
   sprintf(conv, "%d", request_info.process_id);
   process_id= (*env)->NewStringUTF(env, &conv);
   sprintf(conv, "%d", request_info.user_id);
@@ -121,36 +110,26 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_yes
   (*env)->SetObjectArrayElement(env, ret_info, 1, user_id);
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
-  printf("returning yes\n");
+  //printf("returning yes\n");
   return ret_info;
   
   //copy entries in struct to array
   //return array
 }
 
-JNIEXPORT jobjectArray JNICALL Java_pmtest_no
+JNIEXPORT jobjectArray JNICALL Java_PMAccess_no
 (JNIEnv *env, jobject jobj)
 {
-  
   char conv[10];
   jstring process_id;
   jstring user_id;
   jstring pathname;
   jstring system_call;
   int i;
-  jobjectArray ret_info;
   jsize len = 4;
-  //request_info.success = 0;
-  printf("setxattr no\n");
- 
-  success = syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 0);
-
-  while(success!=33){
-    success = syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 100);
-    sleep(.5);
-  }
-  
-  printf("getting info\n");
+  //printf("setxattr no\n");
+  syscall(SYS_setxattr, "/.../policymachinecall", "/.../policymachinecall", "/.../policymachinecall", 100, 0);
+  //printf("getting info\n");
   sprintf(conv, "%d", request_info.process_id);
   process_id= (*env)->NewStringUTF(env, &conv);
   sprintf(conv, "%d", request_info.user_id);
@@ -164,7 +143,7 @@ JNIEXPORT jobjectArray JNICALL Java_pmtest_no
   (*env)->SetObjectArrayElement(env, ret_info, 1, user_id);
   (*env)->SetObjectArrayElement(env, ret_info, 2, pathname);
   (*env)->SetObjectArrayElement(env, ret_info, 3, system_call);
-  printf("returning no\n");
+  //printf("returning no\n");
   return ret_info;
   
   //copy entries in struct to array
