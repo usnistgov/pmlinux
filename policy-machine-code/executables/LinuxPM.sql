@@ -2456,30 +2456,30 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_assignment`(start_node int, 
 BEGIN
 DECLARE node_type_id_in int;
 DECLARE path_id int;
-                IF exists ( SELECT NODE_ID FROM policydb.NODE WHERE NODE_ID = start_node) THEN
-                                IF exists ( SELECT NODE_ID FROM policydb.NODE WHERE NODE_ID = END_NODE)  THEN
+                IF exists ( SELECT node_id FROM policydb.node WHERE node_id = start_node) THEN
+                                IF exists ( SELECT node_id FROM policydb.node WHERE node_id = end_node)  THEN
                                                 IF start_node <> end_node THEN
                                                                 IF get_node_type(start_node) <> 7 and get_node_type(end_node) <> 7 THEN
                                                                                 -- create path_id
-                                                                                INSERT INTO ASSIGNMENT_PATH (ASSIGNMENT_NODE_ID) VALUES (END_NODE);
-                                                                                SELECT MAX(ASSIGNMENT_PATH_ID) INTO path_id FROM ASSIGNMENT_PATH;
+                                                                                INSERT INTO assignment_path (assignment_node_id) VALUES (end_node);
+                                                                                SELECT MAX(assignemnt_path_id) INTO path_id FROM assignment_path;
                                                                                 -- Insert in assignment table
-                                                                                INSERT INTO policydb.ASSIGNMENT (start_node_id, end_node_id, depth, assignment_path_id)
-                                                                                                (SELECT start_node, end_node, 1, path_id FROM DUAL)
+                                                                                INSERT INTO policydb.assignment (start_node_id, end_node_id, depth, assignment_path_id)
+                                                                                                (SELECT start_node, end_node, 1, path_id FROM dual)
                                                                                 UNION
                                                                                                 (SELECT DISTINCT start_node_id, end_node, depth+1, path_id
-                                                                                FROM policydb.ASSIGNMENT
+                                                                                FROM policydb.assignemnt
                                                                                 WHERE end_node_id = start_node
                                                                                 AND assignment_path_id > 0
                                                                                 AND depth > 0);
                                                                 ELSE
-                                                                                INSERT INTO policydb.ASSIGNMENT (start_node_id, end_node_id, depth) values
+                                                                                INSERT INTO policydb.assignment (start_node_id, end_node_id, depth) values
                                                                                                 (start_node, end_node, 1 );
                                                                 END IF;
                                                 END IF;
                                                 IF start_node <> 1 AND get_node_type(end_node) <> 2 THEN  -- other than policy class
                                                                 -- delete connection to connector
-                                                                DELETE FROM assignment WHERE START_NODE_ID = 1 AND END_NODE_ID = end_node AND depth = 1;
+                                                                DELETE FROM assignment WHERE start_node_id = 1 AND end_node_id = end_node AND depth = 1;
                                                 END IF;
                                 END IF;
                 END IF;
@@ -2493,17 +2493,17 @@ BEGIN
 DECLARE node_id int;
 DECLARE opset_id int;
 -- Insert in assignment table
-                IF not exists ( SELECT NAME FROM policydb.NODE WHERE UPPER(NAME) = UPPER(opset_name) ) THEN
+                IF not exists ( SELECT NAME FROM policydb.node WHERE UPPER(NAME) = UPPER(opset_name) ) THEN
                                 call create_opset(opset_name, operations);
                 END IF;
                 SELECT get_node_id(opset_name, 's') INTO opset_id;
 
                 -- Create dual assignment. Assiciations will have path_id null
     if oa_node is not null then
-                                INSERT INTO policydb.ASSIGNMENT (start_node_id, end_node_id, depth) values (oa_node, opset_id, 1);
+                                INSERT INTO policydb.assignment (start_node_id, end_node_id, depth) values (oa_node, opset_id, 1);
                 end if;
     if ua_node is not null then
-                                INSERT INTO policydb.ASSIGNMENT (start_node_id, end_node_id, depth) values (opset_id, ua_node, 1);
+                                INSERT INTO policydb.assignment (start_node_id, end_node_id, depth) values (opset_id, ua_node, 1);
                 end if;
 END//
 DELIMITER ;
@@ -2527,11 +2527,11 @@ BEGIN
 DECLARE node_type_id_in int;
 DECLARE inserted_node_id int;
 -- Insert in Node table
-                                SELECT NODE_TYPE_ID INTO node_type_id_in FROM NODE_TYPE WHERE UPPER(NAME) = UPPER(node_type_name);
-    INSERT INTO NODE (NODE_TYPE_ID, NAME, description) VALUES (node_type_id_in,node_name,node_description);
-    SELECT MAX(NODE_ID) INTO inserted_node_id FROM NODE;
+                                SELECT node_type_id INTO node_type_id_in FROM node_type WHERE UPPER(NAME) = UPPER(node_type_name);
+    INSERT INTO node (node_type_id, NAME, description) VALUES (node_type_id_in,node_name,node_description);
+    SELECT MAX(node_id) INTO inserted_node_id FROM node;
     -- create self assignment
-                 INSERT INTO ASSIGNMENT (start_node_id, end_node_id, depth,assignment_path_id) VALUES (inserted_node_id, inserted_node_id,0,0);
+                 INSERT INTO assignment (start_node_id, end_node_id, depth,assignment_path_id) VALUES (inserted_node_id, inserted_node_id,0,0);
     -- add assignment to the given base node
     IF base_node_id is not NULL THEN
       CALL create_assignment(base_node_id,inserted_node_id);
@@ -2545,8 +2545,8 @@ DELIMITER //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_object_class`(object_class_name varchar(45), object_class_id_in int, class_object_description varchar(100))
 BEGIN
 -- Insert in object_class table
-                IF not exists ( SELECT OBJECT_CLASS_ID FROM policydb.OBJECT_CLASS WHERE object_class_id = object_class_id_in ) THEN
-                                INSERT INTO policydb.OBJECT_CLASS (object_class_id, name, description) values (object_class_id_in, object_class_name, class_object_description);
+                IF not exists ( SELECT object_class_id FROM policydb.object_class WHERE object_class_id = object_class_id_in ) THEN
+                                INSERT INTO policydb.object_class (object_class_id, name, description) values (object_class_id_in, object_class_name, class_object_description);
                 END IF;
 END//
 DELIMITER ;
@@ -2557,10 +2557,10 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_object_detail`(object_id int
 BEGIN
 DECLARE new_object_id int;
   IF object_id is not null THEN
-                IF exists ( SELECT node_id FROM NODE WHERE node_id = object_id) THEN
-                                INSERT INTO OBJECT_DETAIL (object_node_id, original_node_id, object_class_id, host_id, path, include_ascedants, template_id)
+                IF exists ( SELECT node_id FROM node WHERE node_id = object_id) THEN
+                                INSERT INTO object_detail (object_node_id, original_node_id, object_class_id, host_id, path, include_ascedants, template_id)
                                                     VALUES (object_id, original_obj_node_id, object_class_id_in, host_id_in, obj_path, include_ascedants_in, template_id_in);
-      SELECT MAX(OBJECT_NODE_ID) INTO new_object_id from object_detail;
+      SELECT MAX(object_node_id) INTO new_object_id from object_detail;
                 END IF;
   END IF;
 END//
@@ -2652,8 +2652,8 @@ DELIMITER //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_operation`(operation_name varchar(45), object_class_id_in int)
 BEGIN
 -- Insert in object_class table
-                IF not exists ( SELECT OPERATION_ID FROM policydb.OPERATION WHERE UPPER(NAME) = UPPER(operation_name) ) THEN
-                                INSERT INTO policydb.OPERATION (operation_type_id, name, description, object_class_id) values (1, operation_name, operation_name, object_class_id_in);
+                IF not exists ( SELECT operation_id FROM policydb.operation WHERE UPPER(NAME) = UPPER(operation_name) ) THEN
+                                INSERT INTO policydb.operation (operation_type_id, name, description, object_class_id) values (1, operation_name, operation_name, object_class_id_in);
                 END IF;
 END//
 DELIMITER ;
@@ -2665,11 +2665,11 @@ BEGIN
 DECLARE op_id int;
 DECLARE new_node_id int;
 DECLARE op_list varchar(1000);
-                IF not exists ( SELECT NAME FROM policydb.NODE WHERE UPPER(NAME) = UPPER(op_set_name)) THEN
+                IF not exists ( SELECT NAME FROM policydb.node WHERE UPPER(NAME) = UPPER(op_set_name)) THEN
                                 -- Insert in node table
-                                INSERT INTO NODE (NODE_TYPE_ID, NAME, description) VALUES (7, op_set_name, op_set_name);
+                                INSERT INTO node (node_type_id, NAME, description) VALUES (7, op_set_name, op_set_name);
                                 -- Insert in operation_set_details table
-                                SELECT MAX(NODE_ID) INTO new_node_id FROM NODE;
+                                SELECT MAX(node_id) INTO new_node_id FROM node;
                                 SELECT formatCSL(operations) INTO op_list;
                                 SET @separator = ',';
                                 SET @separatorLength = CHAR_LENGTH(@separator);
@@ -2691,10 +2691,10 @@ DELIMITER //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `create_opset_detail`(opset_id int, operation varchar(50))
 BEGIN
 DECLARE op_id int;
-                IF exists ( SELECT NODE_ID FROM NODE WHERE NODE_ID = opset_id) THEN
-                                IF EXISTS (SELECT OPERATION_ID FROM OPERATION WHERE UPPER(NAME) = UPPER(operation)) THEN
-                                                SELECT OPERATION_ID INTO op_id FROM OPERATION WHERE UPPER(NAME) = UPPER(operation);
-                                                INSERT INTO OPERATION_SET_DETAILS (OPERATION_SET_DETAILS_NODE_ID, OPERATION_ID) VALUES (opset_id, op_id);
+                IF exists ( SELECT node_id FROM node WHERE node_id = opset_id) THEN
+                                IF EXISTS (SELECT operation_id FROM operation WHERE UPPER(NAME) = UPPER(operation)) THEN
+                                                SELECT operation_id INTO op_id FROM operation WHERE UPPER(NAME) = UPPER(operation);
+                                                INSERT INTO operation_set_details (operation_set_details_node_id, operation_id) VALUES (opset_id, op_id);
                                 END IF;
                 END IF;
 END//
@@ -2706,10 +2706,10 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `create_user_detail_fun`(user_id int,
                 user_host_id INT(11), user_property_in VARCHAR(200)) RETURNS int(11)
 BEGIN
 -- Insert in USER_DETAIL table
-                IF exists ( SELECT NODE_ID FROM NODE WHERE NODE_ID = user_id) THEN
-                                                INSERT INTO USER_DETAIL (USER_NODE_ID,USER_NAME, FULL_NAME, PASSWORD, EMAIL_ADDRESS, HOST_ID) VALUES (user_id,user_name,full_name,user_password,email_address,user_host_id);
+                IF exists ( SELECT node_id FROM node WHERE node_id = user_id) THEN
+                                                INSERT INTO user_detail (user_node_id,user_name, full_name, password, email_address, host_id) VALUES (user_id,user_name,full_name,user_password,email_address,user_host_id);
                                 END IF;
-    RETURN USER_ID;
+    RETURN user_id;
 END//
 DELIMITER ;
 
@@ -2719,13 +2719,13 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `create_user_fun`(user_id int, user_n
                 user_host_id INT(11), user_property_in VARCHAR(200)) RETURNS int(11)
 BEGIN
 DECLARE new_node_id int(11);
-                IF not exists ( SELECT NODE_ID FROM NODE WHERE NODE_ID = user_id) THEN
+                IF not exists ( SELECT node_id FROM node WHERE node_id = user_id) THEN
       -- Insert into NODE table
       SELECT create_node_fun(user_id, user_name, 'u', user_description, base_id) INTO new_node_id FROM DUAL;
                                                 -- Insert into USER_DETAIL table
-      INSERT INTO USER_DETAIL (USER_NODE_ID,USER_NAME, FULL_NAME, PASSWORD, EMAIL_ADDRESS, HOST_ID) VALUES (new_node_id,user_name,full_name,user_password,email_address,user_host_id);
+      INSERT INTO user_detail (user_node_id,user_name, full_name, password, email_address, host_id) VALUES (new_node_id,user_name,full_name,user_password,email_address,user_host_id);
                                 END IF;
-    RETURN USER_ID;
+    RETURN user_id;
 END//
 DELIMITER ;
 
@@ -2735,23 +2735,23 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_assignment`(start_node int, 
 BEGIN
 DECLARE path_id int;
 declare cnt int;
-                IF exists ( SELECT NODE_ID FROM policydb.NODE WHERE NODE_ID = start_node) THEN
-    IF exists ( SELECT NODE_ID FROM policydb.NODE WHERE NODE_ID = END_NODE)  THEN
+                IF exists ( SELECT node_id FROM policydb.node WHERE node_id = start_node) THEN
+    IF exists ( SELECT node_id FROM policydb.node WHERE node_id = end_node)  THEN
                                 IF start_node <> end_node THEN
         -- get path_id
-        SELECT ASSIGNMENT_PATH_ID INTO path_id FROM ASSIGNMENT
-        WHERE START_NODE_ID = start_node
-        AND END_NODE_ID = end_node;
+        SELECT assignment_path_id INTO path_id FROM assignment
+        WHERE start_node_id = start_node
+        AND end_node_id = end_node;
 
         IF path_id is not null THEN
-          DELETE FROM ASSIGNMENT WHERE ASSIGNMENT_PATH_ID = path_id;
+          DELETE FROM assignment WHERE assignment_path_id = path_id;
         ELSE
-          DELETE FROM ASSIGNMENT
-          WHERE START_NODE_ID = start_node
-          AND END_NODE_ID = end_node;
+          DELETE FROM assignment
+          WHERE start_node_id = start_node
+          AND end_node_id = end_node;
         END IF;
         -- if end_node is not assigned to any other node, assign it to the connector
-        SELECT COUNT(*) INTO cnt FROM ASSIGNMENT WHERE end_node_id = end_node
+        SELECT COUNT(*) INTO cnt FROM assignment WHERE end_node_id = end_node
         AND depth = 1;
         IF cnt = 0 THEN
           CALL create_assignment(1,end_node);
@@ -2766,7 +2766,7 @@ DELIMITER ;
 DELIMITER //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_deny`(deny_id_in int(11))
 BEGIN
-    DELETE FROM DENY WHERE deny_id = deny_id_in;
+    DELETE FROM deny WHERE deny_id = deny_id_in;
 END//
 DELIMITER ;
 
@@ -2774,7 +2774,7 @@ DELIMITER ;
 DELIMITER //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_property`(property_in varchar(200))
 BEGIN
-      DELETE FROM NODE_PROPERTY WHERE UPPER(property_key) = UPPER(property_in);
+      DELETE FROM node_property WHERE UPPER(property_key) = UPPER(property_in);
 END//
 DELIMITER ;
 
@@ -3051,10 +3051,10 @@ DELIMITER ;
 DELIMITER //
 CREATE DEFINER=`root`@`localhost` PROCEDURE `get_denied_ops`(process_id_in int(9), user_id int, obj_id int)
 BEGIN
-    SELECT get_operation_name(DENY_OPERATION_ID) FROM DENY_OPERATION DO, DENY D
-    WHERE DO.DENY_ID = D.deny_id
-    AND (IS_ASCENDANT_OF(user_id, D.USER_ATTRIBUTE_ID) OR ifnull(process_id_in, D.process_id)=D.process_id)
-    AND is_object_in_deny(obj_id, D.DENY_ID, D.IS_INTERSECTION);
+    SELECT get_operation_name(deny_operation_id) FROM deny_operation do, deny d
+    WHERE do.deny_id = d.deny_id
+    AND (IS_ASCENDANT_OF(user_id, d.user_attribute_id) OR ifnull(process_id_in, d.process_id)=d.process_id)
+    AND is_object_in_deny(obj_id, d.deny_id, d.is_intersection);
 END//
 DELIMITER ;
 
@@ -3074,7 +3074,7 @@ DELIMITER //
 CREATE DEFINER=`root`@`localhost` FUNCTION `get_host_id`(hostname varchar(50)) RETURNS int(11)
 BEGIN
 DECLARE hostid int;
-                SELECT HOST_ID INTO hostid FROM HOST WHERE UPPER(HOST_NAME) = UPPER(HOSTNAME);
+                SELECT host_id INTO hostid FROM host WHERE UPPER(host_name) = UPPER(hostname);
 RETURN hostid;
 END//
 DELIMITER ;
@@ -3094,7 +3094,7 @@ DELIMITER //
 CREATE DEFINER=`root`@`localhost` FUNCTION `GET_HOST_PATH`(host_id_in int(11)) RETURNS varchar(300) CHARSET utf8
 BEGIN
 DECLARE workarea_path_out varchar(300);
-                SELECT workarea_path INTO workarea_path_out FROM HOST WHERE host_id = host_id_in;
+                SELECT workarea_path INTO workarea_path_out FROM host WHERE host_id = host_id_in;
 RETURN workarea_path_out;
 END//
 DELIMITER ;
@@ -3105,12 +3105,12 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `get_node_id`(node_name varchar(200),
 BEGIN
 DECLARE node int;
 
-SELECT DISTINCT NODE_ID
+SELECT DISTINCT node_id
 INTO node
-FROM NODE
+FROM node
 JOIN node_type
 on node.node_type_id=node_type.node_type_id
-WHERE UPPER(node.NAME) = UPPER(NODE_NAME)
+WHERE UPPER(node.NAME) = UPPER(node_name)
 AND UPPER(node_type.name) = UPPER(node_type);
 
 RETURN node;
@@ -3123,7 +3123,7 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `GET_NODE_NAME`(node_id_in int(11)) R
 BEGIN
 DECLARE node_name varchar(100);
 
-SELECT name INTO node_name FROM NODE WHERE node_id = node_id_in;
+SELECT name INTO node_name FROM node WHERE node_id = node_id_in;
 RETURN node_name;
 END//
 DELIMITER ;
@@ -3133,7 +3133,7 @@ DELIMITER //
 CREATE DEFINER=`root`@`localhost` FUNCTION `GET_NODE_TYPE`(node_id_in int(11)) RETURNS int(11)
 BEGIN
 DECLARE type_id INT;
-                SELECT node_type_id INTO type_id FROM NODE
+                SELECT node_type_id INTO type_id FROM node
                 WHERE node_id = node_id_in;
 RETURN type_id;
 END//
@@ -3335,9 +3335,9 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `is_ascendant_of`(ascendant_node_id i
 BEGIN
 DECLARE cnt INT;
 
-SELECT COUNT(*) INTO cnt FROM ASSIGNMENT A
-WHERE A.START_NODE_ID = descendant_node_id
-AND A.END_NODE_ID = ascendant_node_id;
+SELECT COUNT(*) INTO cnt FROM assignment a
+WHERE a.start_node_id = descendant_node_id
+AND a.end_node_id = ascendant_node_id;
 
 IF cnt > 0 THEN
   RETURN TRUE;
@@ -3369,24 +3369,24 @@ BEGIN
 DECLARE row_cnt INT;
 DECLARE deny_obj_cnt INT;
 SELECT COUNT(*) INTO deny_obj_cnt
-FROM DENY_OBJ_ATTRIBUTE
-WHERE DENY_ID = deny_id_in;
+FROM deny_obj_attribute
+WHERE deny_id = deny_id_in;
 IF is_intersection THEN
-    SELECT COUNT(*) INTO row_cnt FROM DENY_OBJ_ATTRIBUTE D
-    WHERE D.deny_id = deny_id_in
+    SELECT COUNT(*) INTO row_cnt FROM deny_obj_attribute d
+    WHERE d.deny_id = deny_id_in
     -- AND is_ascendant_of(obj_id,D.object_attribute_id) AND NOT object_complement;
-    AND ((is_ascendant_of(obj_id,D.object_attribute_id) AND NOT object_complement)
-                OR (!is_ascendant_of(obj_id,D.object_attribute_id) AND object_complement));
+    AND ((is_ascendant_of(obj_id,d.object_attribute_id) AND NOT object_complement)
+                OR (!is_ascendant_of(obj_id,d.object_attribute_id) AND object_complement));
     IF row_cnt = 0 OR row_cnt < deny_obj_cnt THEN
       RETURN FALSE;
     ELSE
       RETURN TRUE;
     END IF;
 ELSE  -- UNION
-    SELECT COUNT(*) INTO row_cnt FROM DENY_OBJ_ATTRIBUTE D
-    WHERE D.deny_id = deny_id_in
-    AND ((is_ascendant_of(obj_id,D.object_attribute_id) AND NOT object_complement)
-    OR (!is_ascendant_of(obj_id,D.object_attribute_id) AND object_complement));
+    SELECT COUNT(*) INTO row_cnt FROM deny_obj_attribute d
+    WHERE d.deny_id = deny_id_in
+    AND ((is_ascendant_of(obj_id,d.object_attribute_id) AND NOT object_complement)
+    OR (!is_ascendant_of(obj_id,d.object_attribute_id) AND object_complement));
     IF row_cnt > 0 THEN
       RETURN TRUE;
     ELSE
@@ -5020,11 +5020,11 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `set_property`(property_in varchar(2
 BEGIN
 DECLARE count int;
 -- Insert OR Update in NODE_PROPERTY table
-                SELECT count(*) INTO count FROM NODE_PROPERTY WHERE UPPER(property) = UPPER(property_in) and PROPERTY_NODE_ID = node_id;
+                SELECT count(*) INTO count FROM node_property WHERE UPPER(property) = UPPER(property_in) and property_node_id = node_id;
     IF count > 0 THEN
-      UPDATE NODE_PROPERTY P SET P.PROPERTY_VALUE = property_value_in WHERE P.PROPERTY_NODE_ID = node_id;
+      UPDATE node_property p SET p.property_value = property_value_in WHERE p.property_node_id = node_id;
     ELSE
-      INSERT INTO NODE_PROPERTY (PROPERTY, PROPERTY_VALUE, PROPERTY_NODE_ID) VALUES (property_in, property_value_in, node_id);
+      INSERT INTO node_property (property, property_value, property_node_id) VALUES (property_in, property_value_in, node_id);
     END IF;
 END//
 DELIMITER ;
