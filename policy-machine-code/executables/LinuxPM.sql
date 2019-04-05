@@ -498,6 +498,33 @@ INSERT INTO `assignment` (`assignment_id`, `start_node_id`, `end_node_id`, `dept
 	(2199, 1, 443, 6, 411),
 	(2206, 1, 444, 6, 412),
 	(2213, 1, 445, 6, 413),
+	(2459, 490, 492, 1, NULL),
+	(2468, 494, 500, 1, NULL),
+	(2469, 493, 499, 1, NULL),
+	(2460, 492, 491, 1, NULL),
+	(2484, 500, 497, 1, NULL),
+	(2485, 499, 497, 1, NULL),
+	(2461, 491, 491, 0, 0),
+	(2470, 497, 497, 0, 0),
+	(2471, 495, 495, 0, 0),
+	(2463, 490, 490, 0, 0),
+	(2472, 494, 494, 0, 0),
+	(2473, 493, 493, 0, 0),
+	(2462, 491, 489, 1, 453),
+	(2474, 497, 498, 1, 455),
+	(2475, 495, 496, 1, 456),
+	(2464, 1, 490, 3, 454),
+	(2476, 1, 494, 3, 457),
+	(2477, 1, 493, 3, 458),
+	(2465, 474, 490, 2, 454),
+	(2478, 474, 494, 2, 457),
+	(2479, 474, 493, 2, 458),
+	(2466, 474, 489, 2, 453),
+	(2480, 474, 498, 2, 455),
+	(2481, 474, 496, 2, 456),
+	(2467, 1, 489, 3, 453),
+	(2482, 1, 498, 3, 455),
+	(2483, 1, 496, 3, 456),
 	(1, 2, 2, 0, NULL),
 	(3, 2, 3, 1, 2),
 	(10, 2, 5, 1, 4),
@@ -2410,7 +2437,13 @@ INSERT INTO `assignment_path` (`assignment_path_id`, `assignment_node_id`) VALUE
 	(449, 481),
 	(450, 482),
 	(451, 485),
-	(452, 486);
+	(452, 486),
+	(453, 489),
+	(454, 490),
+	(455, 498),
+	(456, 496),
+	(457, 494),
+	(458, 493);
 /*!40000 ALTER TABLE `assignment_path` ENABLE KEYS */;
 
 -- Dumping structure for view policydb.assignment_view
@@ -3503,7 +3536,7 @@ INSERT INTO `node` (`node_id`, `node_type_id`, `name`, `description`) VALUES
 	(161, 7, '3E5AF6F1', '3E5AF6F1'),
 	(162, 7, 'F6CCB92B', 'F6CCB92B'),
 	(163, 7, '581A03EB', '581A03EB'),
-	(164, 4, 'alice', 'alice'),
+	(164, 4, 'alices', 'alices'),
 	(165, 7, '20B9C61C', '20B9C61C'),
 	(166, 7, 'CAF1CC9C', 'CAF1CC9C'),
 	(167, 7, '0AA431B8', '0AA431B8'),
@@ -3825,8 +3858,18 @@ INSERT INTO `node` (`node_id`, `node_type_id`, `name`, `description`) VALUES
 	(486, 4, 'john', 'john'),
 	(487, 7, 'A28CE122', 'A28CE122'),
 	(488, 7, '7C226BD7', '7C226BD7'),
-	(489, 4, 'jeff', 'jeff'),
-	(490, 6, 'hello.txt', 'hello.txt');
+	(489, 4, 'susan', 'Susan'),
+	(490, 6, 'hello.txt', 'hello.txt'),
+	(491, 3, 'Susan', 'Susan'),
+	(492, 7, 'hello_opset', 'hello_opset'),
+	(493, 6, 'test.txt', 'test.txt'),
+	(494, 6, 'test1.txt', 'test1.txt'),
+	(495, 3, 'Jeff', 'Jeff'),
+	(496, 4, 'jeff', 'Jeff'),
+	(497, 3, 'Alice', 'Alice'),
+	(498, 4, 'alice', 'Alice'),
+	(499, 7, 'test_opset', 'test_opset'),
+	(500, 7, 'test1_opset', 'test1_opset');
 /*!40000 ALTER TABLE `node` ENABLE KEYS */;
 
 -- Dumping structure for table policydb.node_property
@@ -4847,7 +4890,11 @@ INSERT INTO `operation_set_details` (`operation_set_details_node_id`, `operation
 	(197, 50),
 	(198, 50),
 	(199, 50),
-	(200, 50);
+	(200, 50),
+	(492, 6),
+	(492, 7),
+	(500, 6),
+	(499, 7);
 /*!40000 ALTER TABLE `operation_set_details` ENABLE KEYS */;
 
 -- Dumping structure for table policydb.operation_type
