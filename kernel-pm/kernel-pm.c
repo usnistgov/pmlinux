@@ -467,7 +467,7 @@ asmlinkage long new_sys_setxattr(const char *path, const char *name, void *value
   return (ref_sys_setxattr(path, name, value, size, flags));
 }
 
-asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
+/*asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 
  asmlinkage long new_sys_open(const char *pathname, int flags)
 {
@@ -492,7 +492,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
       strcpy(full_pathname, file_pathname);
       up(&sem);
      
-      /*if ((flags & O_APPEND) || (flags & O_TRUNC) || (flags & O_WRONLY) || (flags & O_RDWR)) {
+      if ((flags & O_APPEND) || (flags & O_TRUNC) || (flags & O_WRONLY) || (flags & O_RDWR)) {
 	ans = check_cache(id, "open-write", pathname, -1, full_pathname);
 	if (!ans)
 	  return -1;
@@ -516,7 +516,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
 	//create privileges
 	printk("create stuff\n");
       }
-      else*/
+      else
       ans = check_cache(id, "open", pathname, -1, full_pathname);
       //ans = pm_blocking("processcall", -1, pathname, -1, "open"); 
       if(down_interruptible(&sem))
@@ -543,7 +543,7 @@ asmlinkage long (*ref_sys_open)(const char *pathname, int flags);
     
   up(&sem);
   return ref_sys_open(pathname, flags);
-}
+}*/
 
 asmlinkage long (*ref_sys_read)(int fd, void *buf, size_t count);
 
@@ -699,8 +699,8 @@ static int __init interceptor_start (void)
   ref_sys_setxattr = (void *)sys_call_table[__NR_setxattr];
   sys_call_table[__NR_setxattr] = (unsigned long *)new_sys_setxattr;
 
-  ref_sys_open = (void *)sys_call_table[__NR_open];
-  sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
+  //ref_sys_open = (void *)sys_call_table[__NR_open];
+  //sys_call_table[__NR_open] = (unsigned long *)new_sys_open;
   
   ref_sys_read = (void *)sys_call_table[__NR_read];
   sys_call_table[__NR_read] = (unsigned long *)new_sys_read;
@@ -724,7 +724,7 @@ static void __exit interceptor_end(void)
 
   sys_call_table[__NR_execve] = (unsigned long *)ref_sys_execve;
   sys_call_table[__NR_setxattr] = (unsigned long *)ref_sys_setxattr;
-  sys_call_table[__NR_open] = (unsigned long *)ref_sys_open;
+  //sys_call_table[__NR_open] = (unsigned long *)ref_sys_open;
   sys_call_table[__NR_read] = (unsigned long *)ref_sys_read;
   sys_call_table[__NR_write] = (unsigned long *)ref_sys_write;
   write_cr0(original_cr0);

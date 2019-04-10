@@ -13,7 +13,7 @@ public class PMAccess {
     native String[] init();
     native String[] no();
     native String[] yes();
-    native String get_username();
+    native String get_username(String uid);
     
     public PmDatabase pmDatabase = new PmDatabase();
     public static Connection conn = null;
@@ -27,28 +27,32 @@ public class PMAccess {
 
 	String user = null;
 	String object = null;
-	user = args[0];
-	object = args[1];
+	//user = args[0];
+	//object = args[1];
 	String username;
 	String allowed_ops;
-	int ans = 0;
-	conn = PmDatabase.getConnection();
+	boolean ans;
+	//conn = PmDatabase.getConnection();
 			
-	//String[] decision_info = policy_machine.init();
-	
-	/* int x = 0;
-	   while (x > 0) {
-	   username = get_username(decision_info[1]);
-	   allowed_ops = getAllowedOperations(username, decision_info[2]);
-	   ans = get_answer(allowed_ops, decision_info[3]);
-
-	   if (ans == 1)
-	   decision_info = policy_machine.yes();
-	   
-	   if (ans == 0)
-	   decision_info = policy_machine.no();
-	   }
-	 */
+	String[] decision_info = policy_machine.init();
+	System.out.println("Testing");
+	int x = 0;
+	while (x < 1) {
+	    conn = PmDatabase.getConnection();
+	    username = policy_machine.get_username(decision_info[1]);
+	    allowed_ops = getAllowedOperations(username, decision_info[2]);
+	    ans = get_answer(allowed_ops, decision_info[3]);
+	    System.out.println(ans);
+	    if (ans == true) {
+		System.out.println("yes");
+		decision_info = policy_machine.yes();
+	    }
+	    if (ans == false) {
+		System.out.println("no");
+	       decision_info = policy_machine.no();
+	    }
+	 }
+	 
     }
 		
     public static String getAllowedOperations(String user, String object) throws SQLException  {
@@ -64,7 +68,7 @@ public class PMAccess {
 	} catch (Exception e) {
 	    throw new SQLException(e);
 	} finally {
-	    conn.close();
+	conn.close();
 	}
 			
 	if (returned == null ) {
@@ -75,6 +79,7 @@ public class PMAccess {
     }
 
     public static boolean get_answer(String allowed_operations, String system_call) {
+	System.out.println(allowed_operations + " " + system_call);
 	return allowed_operations.contains(system_call);
     }
 

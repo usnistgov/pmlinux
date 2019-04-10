@@ -31,7 +31,7 @@ typedef struct
 decision_info request_info;
 jobjectArray ret_info;
 
-JNIEXPORT jstring JNICALL Java_PMAccess_get_1username (JNIEnv * env, jobject jobj, jstring user_id) {
+JNIEXPORT jstring JNICALL Java_pm_PMAccess_get_1username (JNIEnv * env, jobject jobj, jstring user_id) {
 
   struct passwd *pws;
   char *conv = (*env)->GetStringUTFChars(env, user_id, 0);
@@ -40,7 +40,7 @@ JNIEXPORT jstring JNICALL Java_PMAccess_get_1username (JNIEnv * env, jobject job
   return (*env)->NewStringUTF(env, (pws->pw_name));
 }
 
-JNIEXPORT jobjectArray JNICALL Java_PMAccess_init
+JNIEXPORT jobjectArray JNICALL Java_pm_PMAccess_init
 (JNIEnv * env, jobject jobj)
 {
   char conv[10];
@@ -82,7 +82,7 @@ JNIEXPORT jobjectArray JNICALL Java_PMAccess_init
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_PMAccess_yes
+JNIEXPORT jobjectArray JNICALL Java_pm_PMAccess_yes
 (JNIEnv *env, jobject jobj)
 {
 
@@ -117,7 +117,7 @@ JNIEXPORT jobjectArray JNICALL Java_PMAccess_yes
   //return array
 }
 
-JNIEXPORT jobjectArray JNICALL Java_PMAccess_no
+JNIEXPORT jobjectArray JNICALL Java_pm_PMAccess_no
 (JNIEnv *env, jobject jobj)
 {
   char conv[10];
