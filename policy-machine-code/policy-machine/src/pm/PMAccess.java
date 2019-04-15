@@ -31,6 +31,7 @@ public class PMAccess {
 	//object = args[1];
 	String username;
 	String allowed_ops;
+	String filename;
 	boolean ans;
 	//conn = PmDatabase.getConnection();
 			
@@ -40,7 +41,9 @@ public class PMAccess {
 	while (x < 1) {
 	    conn = PmDatabase.getConnection();
 	    username = policy_machine.get_username(decision_info[1]);
-	    allowed_ops = getAllowedOperations(username, decision_info[2]);
+	    System.out.println(username);
+	    filename = get_filename(decision_info[2]);
+	    allowed_ops = getAllowedOperations(username, filename);
 	    ans = get_answer(allowed_ops, decision_info[3]);
 	    System.out.println(ans);
 	    if (ans == true) {
@@ -81,6 +84,13 @@ public class PMAccess {
     public static boolean get_answer(String allowed_operations, String system_call) {
 	System.out.println(allowed_operations + " " + system_call);
 	return allowed_operations.contains(system_call);
+    }
+
+    public static String get_filename(String full_path)
+    {
+	int index = full_path.lastIndexOf("/");
+	String short_path = full_path.substring(index+1);
+	return short_path;
     }
 
 }
