@@ -1,69 +1,150 @@
-The following are the instructions you need to complete in order to use the module, the stand in policy machine, and the testing code in the repository.
+Setting up the OS:
+-In order to hook the exec system call, we have to use an edited version of the Ubuntu operating system. There are two versions of the instructions for this: if we provided you with the .deb files and if you’re compiling the OS on your own.
 
 
-Editing and compiling the kernel:
 
-1) In order to use the kernel module as it stands, we have to make a few small edits to a copy of the linux operating system, compile the edited version, and boot the edited version.
+-Provided with *.deb files:
 
-2) Start by cloning the appropriate git repo: git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git
+	  1) Run this command: sudo dpkg -i linux*4.8.0-17.19*.deb
 
-3) Add:
-   - EXPORT_SYMBOL(do_execve) to ~/ubuntu-xenial/fs/exec.c
-   - EXPORT_SYMBOL(getname) to ~/ubuntu-xenial/fs/namei.c
+	  2) The numbers in this command may need to be changed to match the numbers in your own *.deb files.
 
-4) Check source code in system settings"->"software & updates"->"Source code" to allow for some library installs
-
-5) Run sudo apt-get install libncurses5-dev libncursesw5-dev
-
-6) Run sudo apt-get build-dep linux-image-$(uname -r)
-
-7) To compile the OS code, change into the topmost directory (ubuntu-xenial) and run:
-   - fakeroot debian/rules clean
-   - fakeroot debian/rules binary-headers binary-generic binary-perarch
-
-8) Once compilation is complete, there should be several linux-*.deb files in the home directory. In order to use these, you must run the follwing command:
-   - sudo dpkg -i linux*4.8.0-17.19*.deb
-
-   The numbers in this command may need to be changed to match the numbers in your own *.deb files.
-
-9) Now type sudo reboot to restart the machine. While restarting, hold down the shift key to bring up the grub menu. From this menu, be sure to select your version of the OS that you just compiled.
+	  3) Now type sudo reboot to restart the machine. While restarting, hold down the shift key to bring up the grub menu. From this menu, be sure to select your version of the OS that you just compiled.
 
 
-Cloning and setting up repo
 
-1) Start by creating an outermost directory called pm.
+- Compiling your own OS:
 
-2) Then create a directory within this called pm-linux.
+  1) Start by cloning the appropriate git repo: git clone git://kernel.ubuntu.com/ubuntu/ubuntu-xenial.git
 
-3) Clone the repository into this directory.
+  2) Add:
 
-4) You will need to edit all of the paths in the repo to resolve to your directories.
-   - ~/pm/pm-linux/testing/user-tests
-	- You need to edit all of the paths in the idividual files in this directory by changing the user in the path from
-	  kfulton to your own username
+     a. EXPORT_SYMBOL(do_execve) to ~/ubuntu-xenial/fs/exec.c
+
+     b.	EXPORT_SYMBOL(getname) to ~/ubuntu-xenial/fs/namei.c
+
+  3) Check source code in system settings"->"software & updates"->"Source code" to allow for some library installs
+
+  4) Run sudo apt-get install libncurses5-dev libncursesw5-dev
+
+  5) Run sudo apt-get build-dep linux-image-$(uname -r)
+
+  6) To compile the OS code, change into the topmost directory (ubuntu-xenial) and run:
+
+     a. fakeroot debian/rules clean
+
+     b. fakeroot debian/rules binary-headers binary-generic binary-perarch
+
+  7) Once compilation is complete, there should be several linux-*.deb files in the home directory. In order to use these, you must run the following command:
+
+     a. sudo dpkg -i linux*4.8.0-17.19*.deb
+
+     b.	The numbers in this command may need to be changed to match the numbers in your own *.deb files.
+
+  8) Now type sudo reboot to restart the machine. While restarting, hold down the shift key to bring up the grub menu. From this menu, be sure to select your version of the OS that you just compiled.
 
 
-Setting up for testing
 
-1) You will need to make three new users for your system. The first will be named Jeff. The second Alice. The third Bob. To create a new user you need to use the following command: adduser *name*
+Getting the code:
+- You will need to grab the code for the module as well as the database. Much of the code is centered around the directory structure that I used. You will have to account for this.
 
-2) Once you have these users created, you need to edit the executable they run when they login. To do this, you need to type sudo vipw. Once the password file opens, you need to add the following line in the last entry in place of /bin/bash: /home/*your username*/pm/pm-linux/policy-shell/shell
+  1) Create an outermost directory called pm.
 
-3) Now you need to copy the code for each user from the ~/pm/pm-linux/testing/user-tests to each users' home directory respectively. You will also need to compile the code within each users' home directory: gcc bobidexample.c -o bobidexample
+  2) Create another directory within pm called pm-linux.
 
-4) You need to set the permission on each of the files in ~/pm/pm-linux/testing/pm-test-files so that the other users can read and write them. Use this command: chmod 666 *name of file*
+  3) Then clone the repository into this directory.
+
+  4) If you want to use the tests already in the repo, you will have to edit all of the paths in the repo to resolve to your directories.
+
+     a. ~/pm/pm-linux/testing/user-tests (You need to edit all of the paths in the individual files in this directory by changing the user in the path from kfulton to your own username.)
 
 
-Running code
 
-1) First, compile the kernel module. To do this, go to ~/pm/pm-linux/kernel-pm. Then type make.
+Setting up for testing:
+- In order to use the tests provided in the repo, you will need to take the following steps:
 
-2) In a separate terminal tab, go to ~/pm/pm-linux/testing/java-test-pm.
+  1) You will need to make three new users for your system. The first will be named Jeff. The second Alice. The third Susan. To create a new user you need to use the following command: adduser *name*
 
-3) Open a third terminal tab.
+  2) Once you have these users created, you need to edit the executable they run when they login. To do this, you need to type sudo vipw. Once the password file opens, you need to add the following line in the last entry in place of /bin/bash: /home/*your username*/pm/pm-linux/policy-shell/shell
 
-4) Now go to the tab with the kernel code and insert the kernel module using this command: sudo insmod kernel-pm.ko.
+  3) Now you need to copy the code for each user from the ~/pm/pm-linux/testing/user-tests to each users' home directory respectively. You will also need to compile the code within each users' home directory: gcc susanidexample.c -o idexample
 
-5) Back to the "java-test-pm" tab and run the stand in policy machine using this command: java -cp . -Djava.library.path=. pmtest
+  4) You need to set the permission on each of the files in ~/pm/pm-linux/testing/pm-test-files so that the other users can read and write them. Use this command: chmod 666 *name of file*
 
-6) Now login to each user individually and run their code. You should note that Jeff does not have permission to open, read, or write any of the test files. Bob can open and read hello.txt, open test.txt, and open test1.txt. Alice cannot do anything with hello.txt, can open and write test.txt, and open and read test1.txt.
+
+Running Code:
+
+	1) First, compile the kernel module. To do this, go to ~/pm/pm-linux/kernel-pm. Then type make.
+
+	2) In a separate terminal tab, go to ~/pm/pm-linux/policy-machine-code/executables. Load the LinuxPm.sql file into mysql.
+
+	3) In this same tab, switch to ~/pm/pm-linux/policy-machine-code/policy-machine/build/pm
+
+	4) Finally, open a third tab.
+
+	5) Now, insert the kernel module. Do this by going back to the first tab and running: sudo insmod kernel-pm.ko
+
+	6) Now go to the second tab, and run the policy machine: java -cp ~/pm/pm-linux/policy-machine-code/policy-machine/dist/lib/LinuxPM.jar:mysql-connector-java-5.1.31-bin.jar -Djava.library.path=. pm.PMAccess
+
+	7) In the third tab, login to a user (jeff, alice, or susan) and run their code. You should see the following output for each:
+
+	   a. jeff
+
+	      Opened hello.txt
+	      Opened test.txt
+	      Opened test1.txt
+
+	   b. alice
+
+	      Opened hello.txt
+	      Opened test.txt
+	      Wrote test.txt
+	      Opened test1.txt
+	      Read test1.txt
+
+	   c. susan
+	   
+	   Opened hello.txt
+	   Read hello.txt
+	   Wrote hello.txt
+	   Opened test.txt
+	   Opened test1.txt
+
+
+
+Kernel Module:
+- Here you will find a few things to be considered about the kernel module:
+
+  1) It assumes that all the policy machine relevant files are in one central directory: currently pm-test-files.
+
+  2) We’re only enforcing read and write system calls at the moment.
+
+
+
+Database:
+- Here you will find some things that should be considered about the current Database implementation:
+
+  1) Must manually add users, objects, and relationships
+
+  2) Assumes all users are added with actual names
+
+  3) Assumes objects are added as filename
+
+
+Dependencies:
+
+	1) Need to compile kernel for exec (could provide .deb files?)
+
+	4) MySql is already setup on their machine
+
+	5) Running ubuntu system
+
+
+Future Work:
+
+       1) Enforce things like ls
+
+       2) Code to add users and files to DB easier
+
+       3) Code to add users to system easier
+
