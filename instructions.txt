@@ -1,11 +1,22 @@
+Getting the code:
+- You will need to grab the code for the module as well as the database. Much of the code is centered around the directory structure that I used. You will have to account for this.
+
+  1) Create an outermost directory called pm.
+
+  2) Then clone the repository into this directory (https://github.com/usnistgov/pmlinux.git). Check out the Development branch.
+
+  3) If you want to use the tests already in the repo, you will have to edit all of the paths in the repo to resolve to your directories.
+
+     a. ~/pm/pm-linux/testing/user-tests (You need to edit all of the paths in the individual files in this directory by changing the user in the path from kfulton to your own username.)
+
+
 Setting up the OS:
 -In order to hook the exec system call, we have to use an edited version of the Ubuntu operating system. There are two versions of the instructions for this: if we provided you with the .deb files and if you’re compiling the OS on your own.
 
 
-
 -Provided with *.deb files:
 
-	  1) Run this command: sudo dpkg -i linux*4.8.0-17.19*.deb
+	  1) Run this command: sudo dpkg -i linux*4.8.0-17.19*.deb on the files in the os-files directory.
 
 	  2) The numbers in this command may need to be changed to match the numbers in your own *.deb files.
 
@@ -43,20 +54,6 @@ Setting up the OS:
 
   8) Now type sudo reboot to restart the machine. While restarting, hold down the shift key to bring up the grub menu. From this menu, be sure to select your version of the OS that you just compiled.
 
-
-
-Getting the code:
-- You will need to grab the code for the module as well as the database. Much of the code is centered around the directory structure that I used. You will have to account for this.
-
-  1) Create an outermost directory called pm.
-
-  2) Create another directory within pm called pm-linux.
-
-  3) Then clone the repository into this directory.
-
-  4) If you want to use the tests already in the repo, you will have to edit all of the paths in the repo to resolve to your directories.
-
-     a. ~/pm/pm-linux/testing/user-tests (You need to edit all of the paths in the individual files in this directory by changing the user in the path from kfulton to your own username.)
 
 
 
